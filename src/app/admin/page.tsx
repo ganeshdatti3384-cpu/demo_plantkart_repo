@@ -61,7 +61,7 @@ export default function AdminDashboard() {
       </header>
 
       {/* Primary Stats Grid */}
-      <div className="grid grid-cols-4 gap-4 mb-12">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-12">
         {menuItems.map((item, i) => (
           <div 
             key={i} 

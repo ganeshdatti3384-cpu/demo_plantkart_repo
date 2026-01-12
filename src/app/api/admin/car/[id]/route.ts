@@ -20,7 +20,7 @@ export async function PUT(req: Request, { params }: { params: { id: string } }) 
     delete updateData._id;
     updateData.updatedAt = new Date();
 
-    await db.collection('cars').updateOne(
+    await db.collection('car').updateOne(
       { _id: new ObjectId(id) },
       { $set: updateData }
     );
@@ -50,7 +50,7 @@ export async function DELETE(req: Request, { params }: { params: { id: string } 
     const client = await clientPromise;
     const db = client.db();
 
-    await db.collection('cars').deleteOne({ _id: new ObjectId(id) });
+    await db.collection('car').deleteOne({ _id: new ObjectId(id) });
 
     await createAuditLog({
       userId: auth.userId,

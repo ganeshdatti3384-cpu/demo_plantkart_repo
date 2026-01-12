@@ -32,15 +32,28 @@ export default function DashboardUser() {
     { name: 'Consultancy', link: '/consultant', history: '/dashboard/user/history/consultancy', icon: <FaUserTie />, color: 'bg-purple-500', desc: 'Expert advice for migration.' },
     { name: 'Loan Services', link: '/loan', history: '/dashboard/user/history/loan-services', icon: <FaMoneyBillWave />, color: 'bg-amber-500', desc: 'Financial help for students.' },
     { name: 'Meetings', link: '/meetings', history: '/dashboard/user/history/meetings', icon: <FaHandshake />, color: 'bg-blue-600', desc: 'View your scheduled sessions.' },
-    { name: 'Community Events', link: '/events', history: '/events', icon: <FaCalendarAlt />, color: 'bg-rose-500', desc: 'Join global gatherings.' },
+    { name: 'Community Events', link: '/events', history: '/dashboard/user/history/community-events', icon: <FaCalendarAlt />, color: 'bg-rose-500', desc: 'Join global gatherings.' },
     { name: 'Partner Perks', link: '/partners', history: '/partners', icon: <FaTags />, color: 'bg-teal-500', desc: 'Exclusive deals and perks.' },
   ];
 
   useEffect(() => {
     async function fetchDashboardData() {
       try {
-        const [profileRes, notifRes, pickupRes, loanRes, bookingRes, accRes, carRes, meetingRes] = await Promise.all([
-          fetch('/api/auth/profile').then(res => res.json()),
+        // Fetch profile first to check completion
+        const profileRes = await fetch('/api/auth/profile').then(res => res.json());
+        setProfile(profileRes);
+
+        // Enforce profile completion for new users
+        if (profileRes && profileRes.profileCompleted === false) {
+          toast('Please complete your profile first', { icon: '👋' });
+          setTimeout(() => {
+            window.location.href = '/dashboard/user/profile';
+          }, 1500);
+          return;
+        }
+
+        // Only fetch other data if profile is complete
+        const [notifRes, pickupRes, loanRes, bookingRes, accRes, carRes, meetingRes, eventRes] = await Promise.all([
           fetch('/api/notifications/my').then(res => res.json()),
           fetch('/api/airport-pickup/my-requests').then(res => res.json()),
           fetch('/api/loan/my-requests').then(res => res.json()),
@@ -48,9 +61,9 @@ export default function DashboardUser() {
           fetch('/api/accommodation/my-requests').then(res => res.json()),
           fetch('/api/car/my-requests').then(res => res.json()),
           fetch('/api/meetings/my').then(res => res.json()),
+          fetch('/api/events/my-registrations').then(res => res.json()),
         ]);
 
-        setProfile(profileRes);
         setData({
           notifications: Array.isArray(notifRes) ? notifRes : [],
           pickups: Array.isArray(pickupRes) ? pickupRes : [],
@@ -59,7 +72,8 @@ export default function DashboardUser() {
           accommodations: Array.isArray(accRes) ? accRes : [],
           cars: Array.isArray(carRes) ? carRes : [],
           meetings: Array.isArray(meetingRes) ? meetingRes : [],
-        });
+          events: Array.isArray(eventRes) ? eventRes : [],
+        } as any);
       } catch (err) {
         toast.error('Failed to load dashboard data');
       } finally {
@@ -158,7 +172,7 @@ export default function DashboardUser() {
           </header>
 
           {/* Stats Board - One Row */}
-          <div className="grid grid-cols-4 gap-2 sm:gap-4 mb-10">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-2 sm:gap-4 mb-10">
             {stats.map((stat, i) => (
               <div key={i} className="p-3 sm:p-6 rounded-[1.5rem] sm:rounded-[2.5rem] bg-slate-900/40 border border-white/5 relative overflow-hidden group transition-all hover:bg-slate-900/60">
                 <div className="w-8 h-8 sm:w-12 sm:h-12 rounded-xl sm:rounded-2xl bg-slate-800/50 flex items-center justify-center text-sm sm:text-xl mb-2 sm:mb-4">
@@ -209,7 +223,7 @@ export default function DashboardUser() {
                   <FaHistory className="text-blue-500" /> Recent Activity
                 </h2>
                 <button 
-                  onClick={() => window.location.href = '/dashboard/user/history/all'}
+                  onClick={() => window.location.href = '/dashboard/user/history/airport-pickup'}
                   className="text-[10px] font-black uppercase tracking-widest text-blue-500 px-4 py-2 bg-blue-500/10 rounded-xl"
                 >
                   View All
@@ -217,7 +231,7 @@ export default function DashboardUser() {
               </div>
 
               <div className="space-y-4">
-                {[...data.pickups, ...data.accommodations, ...data.cars, ...data.loans, ...data.bookings]
+                {[...data.pickups, ...data.accommodations, ...data.cars, ...data.loans, ...data.bookings, ...(data as any).events || []]
                   .sort((a, b) => new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime())
                   .slice(0, 5)
                   .map((item, i) => (
@@ -226,12 +240,13 @@ export default function DashboardUser() {
                         <div className="w-12 h-12 rounded-2xl bg-slate-900 flex items-center justify-center shadow-sm">
                            {item.flightNumber ? <FaPlaneArrival className="text-blue-500" /> : 
                             item.propertyTitle ? <FaHome className="text-emerald-500" /> : 
-                            item.carTitle ? <FaCar className="text-indigo-500" /> :
+                            item.eventTitle ? <FaCalendarAlt className="text-rose-500" /> :
+                            (item.carTitle || item.title) ? <FaCar className="text-indigo-500" /> :
                             item.amount ? <FaMoneyBillWave className="text-amber-500" /> : <FaUserTie className="text-purple-500" />}
                         </div>
                         <div className="min-w-0 text-left">
                           <p className="font-bold text-white text-base truncate leading-tight">
-                            {item.flightNumber || item.propertyTitle || item.carTitle || (item.amount ? `Loan: $${item.amount}` : 'Consultation')}
+                            {item.flightNumber || item.propertyTitle || item.title || item.carTitle || item.eventTitle || (item.amount ? `Loan: $${item.amount}` : 'Consultation')}
                           </p>
                           <p className="text-[10px] font-black text-slate-500 uppercase">{new Date(item.createdAt || item.arrivalDate).toLocaleDateString()}</p>
                         </div>

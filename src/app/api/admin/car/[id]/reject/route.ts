@@ -15,7 +15,14 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
 
-    const { reason } = await req.json();
+    let reason = 'Vehicle did not meet audit standards';
+    try {
+      const body = await req.json();
+      if (body.reason) reason = body.reason;
+    } catch (e) {
+      // Body might be empty, use default reason
+    }
+
     const client = await clientPromise;
     const db = client.db();
     await db.collection('car').updateOne(

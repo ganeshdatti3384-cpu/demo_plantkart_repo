@@ -1,20 +1,49 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
-import { FaUser, FaEnvelope, FaPhone, FaUniversity, FaQuoteLeft, FaSave, FaCamera, FaArrowLeft } from 'react-icons/fa';
+import { 
+  FaUser, 
+  FaEnvelope, 
+  FaPhone, 
+  FaQuoteLeft, 
+  FaSave, 
+  FaCamera, 
+  FaArrowLeft, 
+  FaGlobe, 
+  FaMapMarkerAlt, 
+  FaPassport, 
+  FaExclamationTriangle, 
+  FaGraduationCap, 
+  FaEdit 
+} from 'react-icons/fa';
 import Sidebar from '@/components/Sidebar';
 import { toast } from 'react-hot-toast';
 
 export default function ProfilePage() {
   const [loading, setLoading] = useState(true);
   const [updating, setUpdating] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
   const [user, setUser] = useState({
     name: '',
     email: '',
-    phone: '',
-    university: '',
     bio: '',
-    role: ''
+    role: '',
+    citizenship: 'Australian',
+    countryDetails: '',
+    mobileAustralia: '',
+    mobilePresent: '',
+    address: '',
+    visaType: '',
+    otherVisaType: '',
+    visaTenure: '',
+    visaDetails: '',
+    visaGrantNumber: '',
+    visaExpiryDate: '',
+    passportNumber: '',
+    isStudent: false,
+    collegeDetails: '',
+    collegeAddress: '',
+    profileCompleted: false
   });
 
   useEffect(() => {
@@ -22,14 +51,34 @@ export default function ProfilePage() {
       .then(res => res.json())
       .then(data => {
         if (!data.error) {
-          setUser({
+          const profileData = {
             name: data.name || '',
             email: data.email || '',
-            phone: data.phone || '',
-            university: data.university || '',
             bio: data.bio || '',
-            role: data.role || ''
-          });
+            role: data.role || '',
+            citizenship: data.citizenship || 'Australian',
+            countryDetails: data.countryDetails || '',
+            mobileAustralia: data.mobileAustralia || '',
+            mobilePresent: data.mobilePresent || '',
+            address: data.address || '',
+            visaType: data.visaType || '',
+            otherVisaType: data.otherVisaType || '',
+            visaTenure: data.visaTenure || '',
+            visaDetails: data.visaDetails || '',
+            visaGrantNumber: data.visaGrantNumber || '',
+            visaExpiryDate: data.visaExpiryDate || '',
+            passportNumber: data.passportNumber || '',
+            isStudent: data.isStudent || false,
+            collegeDetails: data.collegeDetails || '',
+            collegeAddress: data.collegeAddress || '',
+            profileCompleted: data.profileCompleted || false
+          };
+          setUser(profileData);
+          
+          // Automatically open editor for first-time users
+          if (!data.profileCompleted) {
+            setIsEditing(true);
+          }
         }
         setLoading(false);
       });
@@ -37,6 +86,25 @@ export default function ProfilePage() {
 
   const handleUpdate = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    if (!user.name.trim()) return toast.error('Full name is required');
+    if (!user.address.trim()) return toast.error('Residential address is required');
+    if (!user.mobileAustralia.trim()) return toast.error('Australian mobile number is required');
+
+    // Validation for International Users
+    if (user.citizenship === 'Other') {
+      if (!user.countryDetails) return toast.error('Country details are required');
+      if (!user.visaType) return toast.error('Visa type is required');
+      if (user.visaType === 'Other' && !user.otherVisaType) return toast.error('Please specify your other visa type');
+      if (!user.visaTenure) return toast.error('Visa tenure is required');
+    }
+
+    // Validation for Students
+    if (user.isStudent) {
+      if (!user.collegeDetails) return toast.error('College name is required');
+      if (!user.collegeAddress) return toast.error('College address is required');
+    }
+
     setUpdating(true);
     try {
       const res = await fetch('/api/auth/profile', {
@@ -44,14 +112,28 @@ export default function ProfilePage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           name: user.name,
-          phone: user.phone,
-          university: user.university,
-          bio: user.bio
+          bio: user.bio,
+          citizenship: user.citizenship,
+          countryDetails: user.countryDetails,
+          mobileAustralia: user.mobileAustralia,
+          mobilePresent: user.mobilePresent,
+          address: user.address,
+          visaType: user.visaType,
+          otherVisaType: user.otherVisaType,
+          visaTenure: user.visaTenure,
+          visaDetails: user.visaDetails,
+          visaGrantNumber: user.visaGrantNumber,
+          visaExpiryDate: user.visaExpiryDate,
+          passportNumber: user.passportNumber,
+          isStudent: user.isStudent,
+          collegeDetails: user.collegeDetails,
+          collegeAddress: user.collegeAddress
         })
       });
       const data = await res.json();
       if (data.success) {
         toast.success('Profile updated successfully!');
+        setUser(prev => ({ ...prev, profileCompleted: true }));
       } else {
         toast.error(data.error || 'Failed to update profile');
       }
@@ -82,121 +164,354 @@ export default function ProfilePage() {
           <header className="flex items-center gap-4 mb-8 pt-4">
             <button 
               onClick={() => window.history.back()}
-              className="p-2.5 sm:p-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl text-slate-500 shadow-sm"
+              className="p-2.5 sm:p-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl text-slate-500 shadow-sm transition-all hover:bg-slate-50 dark:hover:bg-slate-800"
             >
               <FaArrowLeft size={14} />
             </button>
-            <div>
+            <div className="flex-1">
               <h1 className="text-xl sm:text-5xl font-black text-slate-900 dark:text-white tracking-tighter">My Profile</h1>
               <p className="text-[9px] sm:text-sm font-bold text-slate-500 uppercase tracking-widest mt-0.5 sm:mt-1">Manage your identity & preferences</p>
             </div>
+            {!user.profileCompleted && !isEditing && (
+              <div className="hidden sm:flex items-center gap-2 px-4 py-2 bg-amber-50 dark:bg-amber-900/20 text-amber-600 dark:text-amber-400 border border-amber-200 dark:border-amber-800 rounded-xl text-[10px] font-black uppercase tracking-widest animate-pulse">
+                <FaExclamationTriangle /> Action Required: Complete Profile
+              </div>
+            )}
+            {!isEditing && (
+              <button 
+                onClick={() => setIsEditing(true)}
+                className="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-black text-xs uppercase tracking-widest shadow-xl shadow-blue-500/20 transition-all active:scale-95 flex items-center gap-2"
+              >
+                <FaEdit /> Edit Profile
+              </button>
+            )}
+            {isEditing && user.profileCompleted && (
+               <button 
+               onClick={() => setIsEditing(false)}
+               className="px-6 py-3 bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300 rounded-xl font-black text-xs uppercase tracking-widest transition-all active:scale-95"
+             >
+               Cancel
+             </button>
+            )}
           </header>
 
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-8">
-            {/* Left Column: Avatar & Quick Stats */}
-            <div className="lg:col-span-1 space-y-4 sm:space-y-6">
-              <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-[1.5rem] sm:rounded-[2.5rem] p-5 sm:p-8 shadow-sm">
-                <div className="flex items-center gap-4 sm:gap-6 mb-6">
-                  <div className="relative shrink-0">
-                    <div className="w-16 h-16 sm:w-24 sm:h-24 bg-gradient-to-br from-blue-600 to-indigo-700 rounded-[1rem] sm:rounded-[1.5rem] flex items-center justify-center text-white text-2xl sm:text-4xl font-black shadow-xl shadow-blue-500/20">
-                      {user.name?.charAt(0) || user.email?.charAt(0).toUpperCase()}
-                    </div>
-                    <button className="absolute -bottom-1 -right-1 p-1.5 sm:p-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg sm:rounded-xl text-blue-600 shadow-lg transition-transform hover:scale-110">
-                      <FaCamera className="text-[8px] sm:text-xs" />
+          <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-[2rem] sm:rounded-[3rem] shadow-xl shadow-slate-200/50 dark:shadow-none overflow-hidden">
+            {/* Profile Header Block */}
+            <div className="p-6 sm:p-12 bg-gradient-to-br from-slate-50 to-white dark:from-slate-900 dark:to-slate-900/50 border-b border-slate-100 dark:border-slate-800">
+              <div className="flex flex-col sm:flex-row items-center gap-6 sm:gap-10">
+                <div className="relative group">
+                  <div className="w-24 h-24 sm:w-32 sm:h-32 bg-gradient-to-tr from-blue-600 to-indigo-700 rounded-[2rem] flex items-center justify-center text-white text-4xl sm:text-5xl font-black shadow-2xl shadow-blue-500/30 ring-4 ring-white dark:ring-slate-800">
+                    {user.name?.charAt(0) || user.email?.charAt(0).toUpperCase()}
+                  </div>
+                  {isEditing && (
+                    <button className="absolute -bottom-2 -right-2 p-3 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl text-blue-600 shadow-xl transition-transform hover:scale-110">
+                      <FaCamera size={14} />
                     </button>
-                  </div>
-                  <div className="min-w-0 flex-1">
-                    <h2 className="text-base sm:text-xl font-black text-slate-900 dark:text-white leading-tight truncate">{user.name || 'Set your name'}</h2>
-                    <p className="text-[9px] sm:text-[10px] font-black text-slate-400 uppercase tracking-widest mt-0.5">{user.role || 'Explorer'}</p>
-                  </div>
+                  )}
                 </div>
-                
-                <div className="pt-5 border-t border-slate-50 dark:border-slate-800">
-                  <div className="flex items-center justify-center gap-2 px-4 py-3 bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 rounded-xl font-bold text-[10px] sm:text-xs uppercase tracking-tight break-all">
-                    <FaEnvelope className="shrink-0" /> {user.email}
+                <div className="text-center sm:text-left space-y-2">
+                  <h2 className="text-2xl sm:text-4xl font-black text-slate-900 dark:text-white tracking-tight">{user.name || 'Set your name'}</h2>
+                  <div className="flex flex-wrap justify-center sm:justify-start gap-3">
+                    <span className="px-4 py-1.5 bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 rounded-full text-[10px] font-black uppercase tracking-widest border border-blue-200 dark:border-blue-800/50">
+                      {user.role}
+                    </span>
+                    <span className="flex items-center gap-2 px-4 py-1.5 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 rounded-full text-[10px] font-black uppercase tracking-widest border border-slate-200 dark:border-slate-700">
+                      <FaEnvelope className="text-[9px]" /> {user.email}
+                    </span>
                   </div>
                 </div>
               </div>
             </div>
 
-            {/* Right Column: Profile Form */}
-            <div className="lg:col-span-2">
-              <form onSubmit={handleUpdate} className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-[1.5rem] sm:rounded-[2.5rem] p-5 sm:p-10 shadow-sm space-y-5 sm:space-y-8">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
-                  <div className="space-y-1.5 sm:space-y-2">
-                    <label className="text-[9px] sm:text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">Full Name</label>
-                    <div className="relative">
-                      <FaUser className="absolute left-4 sm:left-5 top-1/2 -translate-y-1/2 text-slate-400 text-xs sm:text-base" />
+            <div className="p-6 sm:p-12">
+              {!isEditing ? (
+                <div className="space-y-12">
+                  {/* Read Only View */}
+                  <section className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 sm:gap-12">
+                    <DetailItem label="Full Name" value={user.name} icon={<FaUser />} />
+                    <DetailItem label="Citizenship" value={user.citizenship} icon={<FaGlobe />} />
+                    {user.citizenship === 'Other' && (
+                      <DetailItem label="Country of Origin" value={user.countryDetails} icon={<FaGlobe />} />
+                    )}
+                    <DetailItem label="Mobile (AU)" value={user.mobileAustralia} icon={<FaPhone />} />
+                    {user.citizenship === 'Other' && (
+                      <DetailItem label="Country Mobile" value={user.mobilePresent} icon={<FaPhone />} />
+                    )}
+                    <div className="md:col-span-2">
+                      <DetailItem label="Physical Address" value={user.address} icon={<FaMapMarkerAlt />} />
+                    </div>
+                  </section>
+
+                  {(user.isStudent || user.citizenship === 'Other') && (
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8 pt-8 border-t border-slate-100 dark:border-slate-800">
+                      {user.isStudent && (
+                        <div className="space-y-6">
+                           <h3 className="text-xs font-black text-blue-600 uppercase tracking-[0.2em] flex items-center gap-2">
+                            <FaGraduationCap /> Academic Details
+                          </h3>
+                          <div className="bg-slate-50 dark:bg-slate-800/50 p-6 rounded-3xl space-y-4">
+                            <DetailItem label="Institution" value={user.collegeDetails} icon={<FaGraduationCap />} />
+                            <DetailItem label="College Address" value={user.collegeAddress} icon={<FaMapMarkerAlt />} />
+                          </div>
+                        </div>
+                      )}
+
+                      {user.citizenship === 'Other' && (
+                        <div className="space-y-6">
+                           <h3 className="text-xs font-black text-indigo-600 uppercase tracking-[0.2em] flex items-center gap-2">
+                            <FaPassport /> Visa Status
+                          </h3>
+                          <div className="bg-slate-50 dark:bg-slate-800/50 p-6 rounded-3xl space-y-4">
+                            <DetailItem label="Visa Type" value={user.visaType === 'Other' ? user.otherVisaType : user.visaType} icon={<FaPassport />} />
+                            <DetailItem label="Tenure" value={user.visaTenure} icon={<FaPassport />} />
+                            <DetailItem label="Grant #" value={user.visaGrantNumber} icon={<FaPassport />} />
+                            <DetailItem label="Passport" value={user.passportNumber} icon={<FaPassport />} />
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  )}
+
+                  <section className="pt-8 border-t border-slate-100 dark:border-slate-800">
+                    <h3 className="text-xs font-black text-slate-400 uppercase tracking-[0.2em] mb-4 flex items-center gap-2">
+                      <FaQuoteLeft className="size-3" /> About / Bio
+                    </h3>
+                    <p className="text-slate-600 dark:text-slate-400 font-medium leading-relaxed italic italic-bg-slate-50 dark:bg-slate-800/30 p-6 rounded-3xl">
+                      {user.bio || 'Your bio is currently empty. Tell the community about your journey.'}
+                    </p>
+                  </section>
+                </div>
+              ) : (
+                <form onSubmit={(e) => { handleUpdate(e); setIsEditing(false); }} className="space-y-10">
+                  {/* Edit Form Content - Reuse your existing logic but styled for the single card */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6 sm:gap-10">
+                    <div className="space-y-2">
+                      <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest px-1">Full Name</label>
                       <input 
                         type="text" 
                         value={user.name}
                         onChange={(e) => setUser({...user, name: e.target.value})}
-                        className="w-full pl-10 sm:pl-12 pr-4 py-2.5 sm:py-4 bg-slate-50 dark:bg-slate-800/50 border-none rounded-xl sm:rounded-2xl focus:ring-2 focus:ring-blue-500 transition-all font-bold dark:text-white text-xs sm:text-sm" 
+                        className="w-full px-6 py-4 bg-slate-50 dark:bg-slate-800/50 border-2 border-transparent focus:border-blue-500 rounded-2xl transition-all font-bold dark:text-white text-sm outline-none" 
                         placeholder="John Doe"
                       />
                     </div>
-                  </div>
-                  <div className="space-y-1.5 sm:space-y-2">
-                    <label className="text-[9px] sm:text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">Phone Number</label>
-                    <div className="relative">
-                      <FaPhone className="absolute left-4 sm:left-5 top-1/2 -translate-y-1/2 text-slate-400 text-[10px] sm:text-xs" />
+                    
+                    <div className="space-y-2">
+                      <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest px-1">Citizenship Status</label>
+                      <select 
+                        value={user.citizenship}
+                        onChange={(e) => setUser({...user, citizenship: e.target.value})}
+                        className="w-full px-6 py-4 bg-slate-50 dark:bg-slate-800/50 border-2 border-transparent focus:border-blue-500 rounded-2xl transition-all font-bold dark:text-white text-sm outline-none appearance-none"
+                      >
+                        <option value="Australian">Australian Citizen</option>
+                        <option value="Other">Other / International</option>
+                      </select>
+                    </div>
+
+                    {user.citizenship === 'Other' && (
+                      <div className="space-y-2">
+                        <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest px-1">Country of Origin</label>
+                        <input 
+                          type="text" 
+                          value={user.countryDetails}
+                          onChange={(e) => setUser({...user, countryDetails: e.target.value})}
+                          className="w-full px-6 py-4 bg-slate-50 dark:bg-slate-800/50 border-2 border-transparent focus:border-blue-500 rounded-2xl transition-all font-bold dark:text-white text-sm outline-none" 
+                          placeholder="e.g. India"
+                        />
+                      </div>
+                    )}
+
+                    <div className="space-y-2">
+                      <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest px-1">Mobile (Australia)</label>
                       <input 
                         type="text" 
-                        value={user.phone}
-                        onChange={(e) => setUser({...user, phone: e.target.value})}
-                        className="w-full pl-10 sm:pl-12 pr-4 py-2.5 sm:py-4 bg-slate-50 dark:bg-slate-800/50 border-none rounded-xl sm:rounded-2xl focus:ring-2 focus:ring-blue-500 transition-all font-bold dark:text-white text-xs sm:text-sm" 
-                        placeholder="+61 XXXXXXXX"
+                        value={user.mobileAustralia}
+                        onChange={(e) => setUser({...user, mobileAustralia: e.target.value})}
+                        className="w-full px-6 py-4 bg-slate-50 dark:bg-slate-800/50 border-2 border-transparent focus:border-blue-500 rounded-2xl transition-all font-bold dark:text-white text-sm outline-none" 
+                        placeholder="+61 XXX XXX XXX"
                       />
                     </div>
-                  </div>
-                </div>
 
-                <div className="space-y-1.5 sm:space-y-2">
-                  <label className="text-[9px] sm:text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">University/Institution</label>
-                  <div className="relative">
-                    <FaUniversity className="absolute left-4 sm:left-5 top-1/2 -translate-y-1/2 text-slate-400 text-xs sm:text-base" />
+                    {user.citizenship === 'Other' && (
+                      <div className="space-y-2">
+                        <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest px-1">Country Mobile</label>
+                        <input 
+                          type="text" 
+                          value={user.mobilePresent}
+                          onChange={(e) => setUser({...user, mobilePresent: e.target.value})}
+                          className="w-full px-6 py-4 bg-slate-50 dark:bg-slate-800/50 border-2 border-transparent focus:border-blue-500 rounded-2xl transition-all font-bold dark:text-white text-sm outline-none" 
+                          placeholder="Optional"
+                        />
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="space-y-2">
+                    <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest px-1">Residential Address</label>
                     <input 
                       type="text" 
-                      value={user.university}
-                      onChange={(e) => setUser({...user, university: e.target.value})}
-                      className="w-full pl-10 sm:pl-12 pr-4 py-2.5 sm:py-4 bg-slate-50 dark:bg-slate-800/50 border-none rounded-xl sm:rounded-2xl focus:ring-2 focus:ring-blue-500 transition-all font-bold dark:text-white text-xs sm:text-sm" 
-                      placeholder="Macquarie University"
+                      value={user.address}
+                      onChange={(e) => setUser({...user, address: e.target.value})}
+                      className="w-full px-6 py-4 bg-slate-50 dark:bg-slate-800/50 border-2 border-transparent focus:border-blue-500 rounded-2xl transition-all font-bold dark:text-white text-sm outline-none" 
+                      placeholder="Street, Suburb, Postcode"
                     />
                   </div>
-                </div>
 
-                <div className="space-y-1.5 sm:space-y-2">
-                  <label className="text-[9px] sm:text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">Professional Bio / About</label>
-                  <div className="relative">
-                    <FaQuoteLeft className="absolute left-4 sm:left-5 top-4 sm:top-5 text-slate-400 text-[9px] sm:text-[10px]" />
+                  <div className="pt-6 border-t border-slate-100 dark:border-slate-800 space-y-8">
+                    <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+                      <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest px-1">Are you currently a student?</label>
+                      <div className="flex gap-2 p-1.5 bg-slate-100 dark:bg-slate-800 rounded-2xl w-full sm:w-auto">
+                        <button 
+                          type="button"
+                          onClick={() => setUser({...user, isStudent: true})}
+                          className={`flex-1 sm:px-8 py-2.5 text-[10px] font-black uppercase tracking-widest rounded-xl transition-all ${user.isStudent ? 'bg-blue-600 text-white shadow-lg shadow-blue-500/20' : 'text-slate-500'}`}
+                        >
+                          Yes
+                        </button>
+                        <button 
+                          type="button"
+                          onClick={() => setUser({...user, isStudent: false})}
+                          className={`flex-1 sm:px-8 py-2.5 text-[10px] font-black uppercase tracking-widest rounded-xl transition-all ${!user.isStudent ? 'bg-slate-600 text-white shadow-lg shadow-slate-500/20' : 'text-slate-500'}`}
+                        >
+                          No
+                        </button>
+                      </div>
+                    </div>
+
+                    {user.isStudent && (
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 p-6 sm:p-8 bg-blue-50/50 dark:bg-blue-900/10 rounded-[2rem] border-2 border-blue-100 dark:border-blue-900/30">
+                        <div className="space-y-2">
+                          <label className="text-[10px] font-black text-blue-600 dark:text-blue-400 uppercase tracking-widest px-1">College/Institution</label>
+                          <input 
+                            type="text" 
+                            value={user.collegeDetails}
+                            onChange={(e) => setUser({...user, collegeDetails: e.target.value})}
+                            className="w-full px-6 py-4 bg-white dark:bg-slate-900 border-2 border-transparent focus:border-blue-500 rounded-2xl transition-all font-bold dark:text-white text-sm outline-none" 
+                            placeholder="Institution Name"
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <label className="text-[10px] font-black text-blue-600 dark:text-blue-400 uppercase tracking-widest px-1">College Address</label>
+                          <input 
+                            type="text" 
+                            value={user.collegeAddress}
+                            onChange={(e) => setUser({...user, collegeAddress: e.target.value})}
+                            className="w-full px-6 py-4 bg-white dark:bg-slate-900 border-2 border-transparent focus:border-blue-500 rounded-2xl transition-all font-bold dark:text-white text-sm outline-none" 
+                            placeholder="College Location"
+                          />
+                        </div>
+                      </div>
+                    )}
+                  </div>
+
+                  {user.citizenship === 'Other' && (
+                    <div className="p-6 sm:p-10 bg-slate-50 dark:bg-slate-800/30 rounded-[2.5rem] border-2 border-slate-100 dark:border-slate-800 space-y-8">
+                       <h3 className="text-xs font-black text-indigo-600 uppercase tracking-widest flex items-center gap-2">
+                        <FaPassport /> Visa Verification details
+                      </h3>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 sm:gap-8">
+                        <div className="space-y-2">
+                          <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest px-1">Visa Subclass</label>
+                          <select 
+                            value={user.visaType}
+                            onChange={(e) => setUser({...user, visaType: e.target.value})}
+                            className="w-full px-6 py-4 bg-white dark:bg-slate-900 border-2 border-slate-200 dark:border-slate-700 rounded-2xl transition-all font-bold text-sm outline-none appearance-none"
+                          >
+                            <option value="">Select Type</option>
+                            <option value="Student (Subclass 500)">Student (500)</option>
+                            <option value="Temporary Graduate (Subclass 485)">Graduate (485)</option>
+                            <option value="Visitor (Subclass 600)">Visitor (600)</option>
+                            <option value="Other">Other</option>
+                          </select>
+                        </div>
+                        {user.visaType === 'Other' && (
+                          <div className="space-y-2">
+                            <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest px-1">Specify Visa</label>
+                            <input 
+                              type="text" 
+                              value={user.otherVisaType}
+                              onChange={(e) => setUser({...user, otherVisaType: e.target.value})}
+                              className="w-full px-6 py-4 bg-white dark:bg-slate-900 border-2 border-slate-200 dark:border-slate-700 rounded-2xl font-bold text-sm outline-none" 
+                            />
+                          </div>
+                        )}
+                        <div className="space-y-2">
+                          <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest px-1">Tenure</label>
+                          <select 
+                            value={user.visaTenure}
+                            onChange={(e) => setUser({...user, visaTenure: e.target.value})}
+                            className="w-full px-6 py-4 bg-white dark:bg-slate-900 border-2 border-slate-200 dark:border-slate-700 rounded-2xl font-bold text-sm outline-none appearance-none"
+                          >
+                            <option value="1 - 2 years">1 - 2 years</option>
+                            <option value="Permanent">Permanent</option>
+                          </select>
+                        </div>
+                        <div className="space-y-2">
+                          <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest px-1">Grant Number</label>
+                          <input 
+                            type="text" 
+                            value={user.visaGrantNumber}
+                            onChange={(e) => setUser({...user, visaGrantNumber: e.target.value})}
+                            className="w-full px-6 py-4 bg-white dark:bg-slate-900 border-2 border-slate-200 dark:border-slate-700 rounded-2xl font-bold text-sm outline-none" 
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  <div className="space-y-2">
+                    <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest px-1">Professional Bio</label>
                     <textarea 
                       value={user.bio}
                       onChange={(e) => setUser({...user, bio: e.target.value})}
-                      rows={3}
-                      className="w-full pl-10 sm:pl-12 pr-4 py-3 sm:py-4 bg-slate-50 dark:bg-slate-800/50 border-none rounded-xl sm:rounded-2xl focus:ring-2 focus:ring-blue-500 transition-all font-bold dark:text-white text-xs sm:text-sm resize-none" 
-                      placeholder="Briefly describe your goals or journey..."
+                      rows={5}
+                      className="w-full px-6 py-4 bg-slate-50 dark:bg-slate-800/50 border-2 border-transparent focus:border-blue-500 rounded-[2rem] transition-all font-bold dark:text-white text-sm outline-none resize-none" 
+                      placeholder="Share your story..."
                     />
                   </div>
-                </div>
 
-                <div className="pt-2 sm:pt-4">
-                  <button 
-                    type="submit" 
-                    disabled={updating}
-                    className="w-full sm:w-auto px-8 sm:px-10 py-3.5 sm:py-4 bg-blue-600 hover:bg-blue-700 text-white rounded-xl sm:rounded-2xl font-black text-xs sm:text-sm uppercase tracking-widest shadow-xl shadow-blue-500/20 flex items-center justify-center gap-3 transition-all active:scale-[0.98]"
-                  >
-                    {updating ? (
-                      <div className="w-4 h-4 sm:w-5 sm:h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                    ) : (
-                      <><FaSave size={14} /> Save Changes</>
-                    )}
-                  </button>
-                </div>
-              </form>
+                  <div className="pt-6 flex gap-4">
+                    <button 
+                      type="submit" 
+                      disabled={updating}
+                      className="flex-1 py-5 bg-blue-600 hover:bg-blue-700 text-white rounded-2xl font-black text-xs uppercase tracking-[0.2em] shadow-xl shadow-blue-500/20 transition-all active:scale-95 flex items-center justify-center gap-3"
+                    >
+                      {updating ? (
+                        <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                      ) : (
+                        <><FaSave size={14} /> Commit Changes</>
+                      )}
+                    </button>
+                    <button 
+                      type="button"
+                      onClick={() => setIsEditing(false)}
+                      className="px-10 py-5 bg-slate-200 dark:bg-slate-800 text-slate-600 dark:text-slate-400 rounded-2xl font-black text-xs uppercase tracking-[0.2em] transition-all"
+                    >
+                      Discard
+                    </button>
+                  </div>
+                </form>
+              )}
             </div>
           </div>
         </div>
       </main>
+    </div>
+  );
+}
+
+function DetailItem({ label, value, icon }: { label: string; value: any; icon: any }) {
+  return (
+    <div className="space-y-1.5 transition-all hover:translate-x-1">
+      <p className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-[0.15em]">{label}</p>
+      <div className="flex items-center gap-3">
+        <div className="w-8 h-8 rounded-lg bg-slate-50 dark:bg-slate-800 flex items-center justify-center text-blue-500 text-sm border border-slate-100 dark:border-slate-700">
+          {icon}
+        </div>
+        <p className="font-bold text-slate-900 dark:text-white text-sm sm:text-base">
+          {value || <span className="text-slate-300 dark:text-slate-700 font-medium">Not specified</span>}
+        </p>
+      </div>
     </div>
   );
 }

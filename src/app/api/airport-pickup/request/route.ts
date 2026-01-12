@@ -27,9 +27,8 @@ export async function POST(req: NextRequest) {
       // Embedded User Snapshot
       userFullName: user.name || user.fullName,
       userEmail: user.email,
-      userPhone: user.phone || user.mobileNumber,
-      nationality: user.nationality || 'N/A',
-      currentCountry: user.currentCountry || 'N/A',
+      userPhone: user.mobileAustralia || user.mobilePresent,
+      nationality: user.citizenship === 'Australian' ? 'Australian' : user.countryDetails,
       // Arrival & Visit Details
       arrivalAirport: data.arrivalAirport,
       airlineName: data.airlineName,

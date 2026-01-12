@@ -52,6 +52,9 @@ export default function CarRentalPage() {
           carId: car._id,
           title: car.title,
           price: car.price,
+          image: car.image,
+          specs: car.specs,
+          location: car.location,
           type: car.type || 'RENT'
         })
       });

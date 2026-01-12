@@ -3,7 +3,11 @@ import clientPromise from '../../../../lib/mongodb';
 import { signJwt } from '../../../../lib/jwt';
 
 export async function POST(req: NextRequest) {
-  const { email, password, role, name } = await req.json();
+  const { email, password, role: requestedRole, name } = await req.json();
+  
+  // Normalize roles: remove vendor role, default to user
+  const role = (requestedRole === 'vendor' || !requestedRole) ? 'user' : requestedRole;
+
   const client = await clientPromise;
   const db = client.db();
   const existing = await db.collection('users').findOne({ email });
@@ -15,9 +19,10 @@ export async function POST(req: NextRequest) {
     password, 
     role, 
     name,
+    profileCompleted: false,
     createdAt: new Date() 
   });
-  const token = signJwt({ userId: result.insertedId, role });
+  const token = signJwt({ userId: result.insertedId.toString(), role });
   
   const response = NextResponse.json({ success: true, token, role });
 

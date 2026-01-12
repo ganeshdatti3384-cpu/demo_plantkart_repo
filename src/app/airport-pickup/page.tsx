@@ -2,10 +2,22 @@
 
 import React, { useState, useEffect } from 'react';
 import { 
-  FaPlaneArrival, FaCalendarAlt, FaClock, FaUserGraduate, 
-  FaCheckCircle, FaHistory, FaUser, FaEnvelope, 
-  FaPhone, FaGlobe, FaMapMarkerAlt, FaSuitcase, 
-  FaInfoCircle, FaSchool, FaCar, FaUserAlt 
+  FaPlaneArrival, 
+  FaCalendarAlt, 
+  FaClock, 
+  FaCheckCircle, 
+  FaHistory, 
+  FaUser, 
+  FaEnvelope, 
+  FaPhone, 
+  FaGlobe, 
+  FaMapMarkerAlt, 
+  FaSuitcase, 
+  FaInfoCircle, 
+  FaSchool, 
+  FaCar, 
+  FaUserAlt, 
+  FaGraduationCap 
 } from 'react-icons/fa';
 import Sidebar from '@/components/Sidebar';
 import { toast } from 'react-hot-toast';
@@ -168,16 +180,16 @@ export default function AirportPickupRequest() {
                     <p className="font-bold text-slate-900 dark:text-white">{profile?.email || 'Loading...'}</p>
                   </div>
                   <div>
-                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Phone Number</p>
-                    <p className="font-bold text-slate-900 dark:text-white">{profile?.phone || profile?.mobileNumber || 'Loading...'}</p>
+                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Mobile (AU)</p>
+                    <p className="font-bold text-slate-900 dark:text-white">{profile?.mobileAustralia || profile?.phone || 'Loading...'}</p>
                   </div>
                   <div>
-                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Nationality</p>
-                    <p className="font-bold text-slate-900 dark:text-white">{profile?.nationality || 'N/A'}</p>
+                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Citizenship</p>
+                    <p className="font-bold text-slate-900 dark:text-white">{profile?.citizenship || 'N/A'}</p>
                   </div>
                   <div>
-                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Current Country</p>
-                    <p className="font-bold text-slate-900 dark:text-white">{profile?.currentCountry || 'N/A'}</p>
+                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Country</p>
+                    <p className="font-bold text-slate-900 dark:text-white">{profile?.countryDetails || 'N/A'}</p>
                   </div>
                 </div>
               </div>
@@ -272,10 +284,10 @@ export default function AirportPickupRequest() {
                     {formData.purposeOfVisit === 'Study' && (
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 animate-in fade-in slide-in-from-top-4 duration-500">
                         <div className="space-y-2">
-                          <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">College/University Name</label>
+                          <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">Institution Name</label>
                           <div className="relative">
-                            <FaSchool className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-400" />
-                            <input type="text" name="collegeName" required placeholder="e.g. University of Sydney" value={formData.collegeName} onChange={handleChange} className="w-full pl-14 pr-6 py-4 bg-slate-50 dark:bg-slate-800/50 border-none rounded-2xl focus:ring-2 focus:ring-blue-500 transition-all font-bold dark:text-white" />
+                            <FaGraduationCap className="absolute left-6 top-1/2 -translate-y-1/2 text-slate-400" />
+                            <input type="text" name="collegeName" required placeholder="e.g. Sydney College" value={formData.collegeName} onChange={handleChange} className="w-full pl-14 pr-6 py-4 bg-slate-50 dark:bg-slate-800/50 border-none rounded-2xl focus:ring-2 focus:ring-blue-500 transition-all font-bold dark:text-white" />
                           </div>
                         </div>
                         <div className="space-y-2">

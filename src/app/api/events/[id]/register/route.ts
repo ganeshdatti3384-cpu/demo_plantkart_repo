@@ -14,20 +14,37 @@ export async function POST(req: NextRequest, { params }) {
     
     const eventId = params.id;
     
-    // Check if user is already registered
+    // Check if user is already registered (optional, can keep both for redundancy)
     const event = await db.collection('events').findOne({ 
-      _id: new ObjectId(eventId),
-      attendees: userId
+      _id: new ObjectId(eventId)
     });
 
-    if (event) {
+    if (!event) {
+      return NextResponse.json({ success: false, message: 'Event not found' }, { status: 404 });
+    }
+
+    if (event.attendees?.includes(userId)) {
       return NextResponse.json({ success: false, message: 'Already registered' });
     }
 
+    // Add to attendees list in event document
     await db.collection('events').updateOne(
       { _id: new ObjectId(eventId) },
       { $addToSet: { attendees: userId } }
     );
+
+    // Create a separate registration record for the vendor to see in their dashboard
+    await db.collection('event_registrations').insertOne({
+      eventId: eventId,
+      userId: userId,
+      vendorId: event.vendorId || null, // Link to the uploader
+      title: event.title,
+      category: event.category,
+      date: event.date,
+      location: event.location,
+      status: 'REGISTERED',
+      createdAt: new Date()
+    });
 
     return NextResponse.json({ success: true });
   } catch (error) {

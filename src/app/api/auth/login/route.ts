@@ -22,7 +22,7 @@ export async function POST(req: NextRequest) {
   await db.collection('otps').deleteOne({ _id: otpRecord._id });
   // Issue JWT
   const role = user.role || 'user';
-  const token = signJwt({ userId: user._id, role });
+  const token = signJwt({ userId: user._id.toString(), role });
 
   const response = NextResponse.json({ success: true, token, role });
   

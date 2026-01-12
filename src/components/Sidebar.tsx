@@ -5,7 +5,8 @@ import {
   FaPlaneArrival, FaHome, FaCar, FaUserTie, FaMoneyBillWave, 
   FaHandshake, FaCalendarAlt, FaTags, FaChartPie, FaSignOutAlt,
   FaGripHorizontal, FaBars, FaTimes, FaUserCircle,
-  FaChevronLeft, FaChevronRight, FaBell, FaCog, FaUsers, FaHistory, FaTrashAlt
+  FaChevronLeft, FaChevronRight, FaBell, FaCog, FaUsers, FaHistory, FaTrashAlt,
+  FaClipboardList
 } from 'react-icons/fa';
 import { toast } from 'react-hot-toast';
 import { usePathname, useRouter } from 'next/navigation';
@@ -18,17 +19,17 @@ export default function Sidebar({ activeService = '' }: { activeService?: string
   const [showNotifDropdown, setShowNotifDropdown] = useState(false);
   const [userName, setUserName] = useState('');
   const [userRole, setUserRole] = useState('user');
-  const [mounted, setMounted] = useState(false);
   const [viewMode, setViewMode] = useState<'user' | 'vendor'>('user');
+  const [mounted, setMounted] = useState(false);
   const router = useRouter();
   const pathname = usePathname();
 
   useEffect(() => {
     setMounted(true);
     const savedRole = typeof window !== 'undefined' ? localStorage.getItem('role') || 'user' : 'user';
-    const savedViewMode = typeof window !== 'undefined' ? localStorage.getItem('viewMode') || 'user' : 'user';
+    const savedViewMode = typeof window !== 'undefined' ? (localStorage.getItem('viewMode') as 'user' | 'vendor') || 'user' : 'user';
     setUserRole(savedRole);
-    setViewMode(savedViewMode as 'user' | 'vendor');
+    setViewMode(savedViewMode);
 
     async function fetchUserData() {
       try {
@@ -53,12 +54,18 @@ export default function Sidebar({ activeService = '' }: { activeService?: string
     fetchUserData();
   }, []);
 
+  const toggleViewMode = () => {
+    const newMode = viewMode === 'user' ? 'vendor' : 'user';
+    setViewMode(newMode);
+    localStorage.setItem('viewMode', newMode);
+    router.push(newMode === 'user' ? '/dashboard/user' : '/vendor/accommodation');
+  };
+
   const getDashboardLink = () => {
     if (!mounted) return '/dashboard/user';
     switch(userRole) {
       case 'admin': return '/admin';
       case 'super_admin': return '/admin';
-      case 'vendor': return '/dashboard/vendor';
       case 'consultant': return '/dashboard/consultant';
       default: return '/dashboard/user';
     }
@@ -78,6 +85,7 @@ export default function Sidebar({ activeService = '' }: { activeService?: string
   const vendorFeatures = [
     { name: 'Accommodation', link: '/vendor/accommodation', icon: <FaHome />, color: 'bg-emerald-500' },
     { name: 'Car Rental', link: '/vendor/car', icon: <FaCar />, color: 'bg-indigo-500' },
+    { name: 'Customer Bookings', link: '/vendor/requests', icon: <FaClipboardList />, color: 'bg-blue-500' },
     { name: 'Community Events', link: '/vendor/events', icon: <FaCalendarAlt />, color: 'bg-rose-500' },
     { name: 'Meetings', link: '/vendor/meetings', icon: <FaHandshake />, color: 'bg-blue-600' },
     { name: 'Partner Perks', link: '/vendor/partners', icon: <FaTags />, color: 'bg-teal-500' },
@@ -87,9 +95,10 @@ export default function Sidebar({ activeService = '' }: { activeService?: string
     { name: 'Service Matrix', link: '/admin', icon: <FaGripHorizontal className="text-blue-500" /> },
     { name: 'Identity Vault', link: '/admin/users', icon: <FaUsers className="text-blue-500" /> },
     { name: 'Accommodation', link: '/admin/accommodation/pending', icon: <FaHome className="text-emerald-500" /> },
-    { name: 'Car Rental', link: '/admin/car/pending', icon: <FaCar className="text-indigo-500" /> },
+    { name: 'Car Fleet', link: '/admin/car/pending', icon: <FaCar className="text-indigo-500" /> },
+    { name: 'Car Requests', link: '/admin/car/requests', icon: <FaCar className="text-indigo-400" /> },
     { name: 'Logistics Hub', link: '/admin/airport-pickup/requests', icon: <FaPlaneArrival className="text-blue-400" /> },
-    { name: 'Consultants', link: '/admin/consultants', icon: <FaUserTie className="text-purple-500" /> },
+    { name: 'Meetings', link: '/admin/meetings/pending', icon: <FaUserTie className="text-purple-500" /> },
     { name: 'Global Bookings', link: '/admin/bookings', icon: <FaCalendarAlt className="text-blue-600" /> },
     { name: 'Financial Ledger', link: '/admin/payments', icon: <FaMoneyBillWave className="text-emerald-600" /> },
     { name: 'Security Audit', link: '/admin/audit-logs', icon: <FaHistory className="text-slate-500" /> },
@@ -97,14 +106,7 @@ export default function Sidebar({ activeService = '' }: { activeService?: string
   ];
 
 
-  const features = !mounted ? [] : (userRole === 'admin' || userRole === 'super_admin') ? adminFeatures : (viewMode === 'vendor' ? vendorFeatures : userFeatures);
-
-  const toggleViewMode = () => {
-    const newMode = viewMode === 'user' ? 'vendor' : 'user';
-    setViewMode(newMode);
-    localStorage.setItem('viewMode', newMode);
-    toast.success(`Switched to ${newMode === 'user' ? 'User' : 'Vendor'} view`);
-  };
+  const features = !mounted ? [] : (userRole === 'admin' || userRole === 'super_admin') ? adminFeatures : (viewMode === 'user' ? userFeatures : vendorFeatures);
 
   const isLinkActive = (itemLink: string, itemName: string) => {
     if (activeService === itemName) return true;
@@ -151,6 +153,37 @@ export default function Sidebar({ activeService = '' }: { activeService?: string
 
           <nav className="space-y-0.5">
             {!isAdmin && (
+              <div className="px-4 mb-4">
+                <div className="bg-slate-100 dark:bg-slate-800 p-1 rounded-xl flex items-center shadow-inner">
+                  <button
+                    onClick={() => {
+                        if (viewMode !== 'user') toggleViewMode();
+                    }}
+                    className={`flex-1 py-1.5 px-2 rounded-lg text-[11px] font-black transition-all ${
+                      viewMode === 'user' 
+                        ? 'bg-white dark:bg-slate-700 text-blue-600 shadow-sm' 
+                        : 'text-slate-500 hover:text-slate-700 dark:text-slate-400'
+                    }`}
+                  >
+                    USER
+                  </button>
+                  <button
+                    onClick={() => {
+                        if (viewMode !== 'vendor') toggleViewMode();
+                    }}
+                    className={`flex-1 py-1.5 px-3 rounded-lg text-[11px] font-black transition-all ${
+                      viewMode === 'vendor' 
+                        ? 'bg-white dark:bg-slate-700 text-emerald-600 shadow-sm' 
+                        : 'text-slate-500 hover:text-slate-700 dark:text-slate-400'
+                    }`}
+                  >
+                    PARTNER
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {!isAdmin && (
               <button 
                 onClick={() => {
                   router.push(getDashboardLink());
@@ -170,38 +203,10 @@ export default function Sidebar({ activeService = '' }: { activeService?: string
 
             {!collapsed && (
               <div className={`pt-3 pb-1 px-4 text-[9px] font-black uppercase tracking-widest ${isAdmin ? 'text-slate-500' : 'text-slate-400 dark:text-slate-500'}`}>
-                {isAdmin ? 'Operation Domains' : viewMode === 'vendor' ? 'Vendor Services' : 'My Services'}
+                {isAdmin ? 'Operation Domains' : viewMode === 'user' ? 'My Services' : 'Partner Services'}
               </div>
             )}
             {collapsed && <div className="h-4" />}
-
-            {/* User/Vendor Toggle Switch - Only for non-admin users */}
-            {!isAdmin && !collapsed && (
-              <div className="px-4 mb-4">
-                <div className="bg-slate-100 dark:bg-slate-800 rounded-xl p-1 flex items-center gap-1">
-                  <button
-                    onClick={toggleViewMode}
-                    className={`flex-1 py-2 px-3 rounded-lg text-xs font-black uppercase tracking-wider transition-all ${
-                      viewMode === 'user'
-                        ? 'bg-white dark:bg-slate-700 text-blue-600 shadow-sm'
-                        : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'
-                    }`}
-                  >
-                    User
-                  </button>
-                  <button
-                    onClick={toggleViewMode}
-                    className={`flex-1 py-2 px-3 rounded-lg text-xs font-black uppercase tracking-wider transition-all ${
-                      viewMode === 'vendor'
-                        ? 'bg-white dark:bg-slate-700 text-blue-600 shadow-sm'
-                        : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'
-                    }`}
-                  >
-                    Vendor
-                  </button>
-                </div>
-              </div>
-            )}
 
             {features.map((feature, i) => (
               <button 
@@ -212,13 +217,13 @@ export default function Sidebar({ activeService = '' }: { activeService?: string
                 }}
                 className={`w-full flex items-center ${collapsed ? 'justify-center' : 'gap-3 px-4'} py-2.5 sm:py-3 rounded-xl transition-all font-bold text-[13px] sm:text-sm ${
                   isLinkActive(feature.link, feature.name)
-                    ? 'bg-blue-600 text-white shadow-lg shadow-blue-500/20'
+                    ? (viewMode === 'vendor' && !isAdmin ? 'bg-emerald-600' : 'bg-blue-600') + ' text-white shadow-lg shadow-blue-500/20'
                     : isAdmin ? 'text-slate-400 hover:bg-white/5' : 'text-slate-500 hover:bg-slate-50 dark:hover:bg-slate-800'
                 }`}
                 title={collapsed ? feature.name : ''}
               >
                 <span className={`text-base sm:text-lg shrink-0 ${isLinkActive(feature.link, feature.name) ? 'text-white' : isAdmin ? 'text-slate-500' : 'text-slate-400'}`}>{feature.icon}</span>
-                {!collapsed && <span className="truncate">{feature.name}</span>}
+                {!collapsed && <span className="truncate">{viewMode === 'vendor' && !isAdmin ? `List ${feature.name}` : feature.name}</span>}
               </button>
             ))}
           </nav>
@@ -234,11 +239,31 @@ export default function Sidebar({ activeService = '' }: { activeService?: string
           <div className={`flex ${collapsed ? 'flex-col' : 'items-center'} gap-2`}>
             <button 
               onClick={() => {
+                router.push('/notifications');
+                setIsOpen(false);
+              }}
+              className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl transition-all font-bold text-[13px] sm:text-sm relative ${
+                pathname === '/notifications'
+                  ? 'bg-blue-600 text-white shadow-lg'
+                  : 'bg-slate-50 dark:bg-slate-800/50 text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800'
+              }`}
+              title="Notifications"
+            >
+              <FaBell className="text-base sm:text-lg shrink-0" />
+              {!collapsed && <span className="hidden sm:inline">Alerts</span>}
+              {notifications.length > 0 && (
+                <span className="absolute -top-1 -right-1 w-5 h-5 bg-rose-600 text-white text-[10px] font-black rounded-full flex items-center justify-center border-2 border-white dark:border-slate-900">
+                  {notifications.length > 9 ? '9+' : notifications.length}
+                </span>
+              )}
+            </button>
+            <button 
+              onClick={() => {
                 router.push(isAdmin ? '/admin/users' : '/dashboard/user/profile');
                 setIsOpen(false);
               }}
               className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl transition-all font-bold text-[13px] sm:text-sm ${
-                activeService === 'Profile' || activeService === 'Identity'
+                activeService === 'Profile' || activeService === 'Identity' || activeService === 'User Identity'
                   ? 'bg-blue-600 text-white shadow-lg'
                   : 'bg-slate-50 dark:bg-slate-800/50 text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800'
               }`}
@@ -247,15 +272,15 @@ export default function Sidebar({ activeService = '' }: { activeService?: string
               {isAdmin ? <FaUsers size={16} /> : <FaUserCircle className="text-base sm:text-lg shrink-0" />}
               {!collapsed && <span className="hidden sm:inline">{isAdmin ? 'Users' : 'Profile'}</span>}
             </button>
-            <button 
-              onClick={handleLogout}
-              className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl transition-all font-bold text-[13px] sm:text-sm bg-rose-50 dark:bg-rose-900/10 text-rose-500 hover:bg-rose-100 dark:hover:bg-rose-900/20"
-              title="Sign Out"
-            >
-              <FaSignOutAlt className="text-base sm:text-lg shrink-0" />
-              {!collapsed && <span className="hidden sm:inline">Logout</span>}
-            </button>
           </div>
+          <button 
+            onClick={handleLogout}
+            className="w-full mt-2 flex items-center justify-center gap-2 py-2.5 rounded-xl transition-all font-bold text-[13px] sm:text-sm bg-rose-50 dark:bg-rose-900/10 text-rose-500 hover:bg-rose-100 dark:hover:bg-rose-900/20"
+            title="Sign Out"
+          >
+            <FaSignOutAlt className="text-base sm:text-lg shrink-0" />
+            {!collapsed && <span className="">Logout</span>}
+          </button>
         </div>
       </>
     );
@@ -265,8 +290,46 @@ export default function Sidebar({ activeService = '' }: { activeService?: string
 
   return (
     <>
-      {/* ...existing code... */}
-      <aside className={`fixed top-0 left-0 bottom-0 w-[260px] bg-white dark:bg-slate-900 z-[70] transition-transform duration-300 transform lg:hidden flex flex-col ${
+      {/* Mobile Top Bar */}
+      <div className="lg:hidden fixed top-0 left-0 right-0 h-16 bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 z-[60] flex items-center justify-between px-4">
+        <div className="flex items-center gap-3">
+          <button 
+            onClick={() => setIsOpen(true)}
+            className="p-2 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl transition-colors"
+          >
+            <FaBars size={20} />
+          </button>
+          <div className="flex items-center gap-2">
+            <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center shadow-lg shadow-blue-500/20">
+              <span className="text-white font-black text-sm">O</span>
+            </div>
+            <span className="text-sm font-black uppercase tracking-tighter text-slate-900 dark:text-white">Overseas</span>
+          </div>
+        </div>
+        
+        <div className="flex items-center gap-2">
+          {mounted && <ThemeSwitcher />}
+          <button 
+            onClick={() => router.push('/notifications')}
+            className="relative p-2 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl transition-colors"
+          >
+            <FaBell size={20} />
+            {notifications.length > 0 && (
+              <span className="absolute top-1.5 right-1.5 w-4 h-4 bg-rose-600 text-white text-[10px] font-black rounded-full flex items-center justify-center border-2 border-white dark:border-slate-900 shadow-sm">
+                {notifications.length > 9 ? '9+' : notifications.length}
+              </span>
+            )}
+          </button>
+          <button 
+            onClick={() => router.push(isAdmin ? '/admin/users' : '/dashboard/user/profile')}
+            className="w-8 h-8 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-slate-500 hover:text-blue-600 transition-colors"
+          >
+            <FaUserCircle size={20} />
+          </button>
+        </div>
+      </div>
+
+      <aside className={`fixed top-0 left-0 bottom-0 w-[260px] bg-white dark:bg-slate-900 z-[100] transition-transform duration-300 transform lg:hidden flex flex-col ${
         isOpen ? 'translate-x-0' : '-translate-x-full'
       }`}>
         <NavContent collapsed={false} />
@@ -285,6 +348,9 @@ export default function Sidebar({ activeService = '' }: { activeService?: string
           <NavContent collapsed={isCollapsed} />
         </div>
       </aside>
+
+      {/* Spacers for fixed navs on mobile */}
+      <div className="h-16 lg:hidden" />
 
       {/* Bottom Navigation Bar for Mobile */}
       <div className="lg:hidden fixed bottom-0 left-0 right-0 h-16 backdrop-blur-lg border-t flex items-center justify-around px-6 z-50 pb-safe bg-white/80 dark:bg-slate-900/80 border-slate-200 dark:border-slate-800">

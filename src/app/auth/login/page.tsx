@@ -27,8 +27,6 @@ export default function LoginWithOTP() {
         
         if (data.role === 'super_admin' || data.role === 'admin') {
           window.location.href = '/admin';
-        } else if (data.role === 'vendor') {
-          window.location.href = '/dashboard/vendor';
         } else if (data.role === 'consultant') {
           window.location.href = '/dashboard/consultant';
         } else {
@@ -118,8 +116,6 @@ export default function LoginWithOTP() {
         // Immediate redirect based on role
         if (data.role === 'super_admin' || data.role === 'admin') {
           window.location.href = '/admin';
-        } else if (data.role === 'vendor') {
-          window.location.href = '/dashboard/vendor';
         } else if (data.role === 'consultant') {
           window.location.href = '/dashboard/consultant';
         } else {

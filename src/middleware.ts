@@ -79,9 +79,13 @@ export async function middleware(req: NextRequest) {
         return NextResponse.redirect(new URL('/dashboard', req.url));
     }
 
-    // Vendor specific paths
-    if (pathname.startsWith('/api/vendor') && role !== 'vendor' && role !== 'admin') {
+    // Vendor specific paths (Now accessible by standard users)
+    if (pathname.startsWith('/api/vendor') && !['user', 'admin', 'super_admin'].includes(role)) {
         return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+    }
+
+    if (pathname.startsWith('/vendor') && !['user', 'admin', 'super_admin'].includes(role)) {
+      return NextResponse.redirect(new URL('/dashboard/user', req.url));
     }
 
     // Add user info to headers for downstream routes

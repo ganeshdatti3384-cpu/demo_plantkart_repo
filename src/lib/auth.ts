@@ -12,7 +12,8 @@ export async function verifyToken(token: string) {
 export function getUserIdFromToken(token: string): string | null {
   const decoded = verifyJwt(token);
   if (decoded && typeof decoded === 'object' && 'userId' in decoded) {
-    return (decoded as any).userId;
+    const userId = (decoded as any).userId;
+    return typeof userId === 'string' ? userId : userId.toString();
   }
   return null;
 }

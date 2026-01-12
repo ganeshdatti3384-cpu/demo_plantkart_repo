@@ -42,7 +42,7 @@ export async function GET(req: NextRequest) {
       email: u.email,
       name: u.name,
       role: u.role,
-      phone: u.phone,
+      mobile: u.mobileAustralia || u.mobilePresent,
       isDisabled: u.isDisabled || false,
       createdAt: u.createdAt
     }));

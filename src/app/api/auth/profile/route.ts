@@ -32,7 +32,25 @@ export async function PATCH(req: NextRequest) {
   }
 
   try {
-    const { name, phone, bio, university } = await req.json();
+    const { 
+      name, 
+      bio, 
+      citizenship,
+      countryDetails,
+      mobileAustralia,
+      mobilePresent,
+      address,
+      visaType,
+      otherVisaType,
+      visaTenure,
+      visaDetails,
+      visaGrantNumber,
+      visaExpiryDate,
+      passportNumber,
+      isStudent,
+      collegeDetails,
+      collegeAddress
+    } = await req.json();
     const client = await clientPromise;
     const db = client.db();
 
@@ -41,9 +59,23 @@ export async function PATCH(req: NextRequest) {
       { 
         $set: { 
           name, 
-          phone, 
           bio, 
-          university,
+          citizenship,
+          countryDetails,
+          mobileAustralia,
+          mobilePresent,
+          address,
+          visaType,
+          otherVisaType,
+          visaTenure,
+          visaDetails,
+          visaGrantNumber,
+          visaExpiryDate,
+          passportNumber,
+          isStudent,
+          collegeDetails,
+          collegeAddress,
+          profileCompleted: true,
           updatedAt: new Date() 
         } 
       }

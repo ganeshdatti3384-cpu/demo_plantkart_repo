@@ -17,9 +17,12 @@ export async function POST(req: NextRequest) {
     const data = await req.json();
     const client = await clientPromise;
     const db = client.db();
+
+    console.log(`Vendor ${userId} creating car listing:`, data);
+
     const result = await db.collection('car').insertOne({
       ...data,
-      vendorId: userId,
+      vendorId: userId.toString(),
       status: 'PENDING',
       createdAt: new Date(),
       updatedAt: new Date(),
@@ -27,8 +30,10 @@ export async function POST(req: NextRequest) {
     });
     
     return NextResponse.json({ success: true, id: result.insertedId });
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error creating car listing:', error);
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+    return NextResponse.json({ 
+      error: error.message || 'Internal server error during listing creation' 
+    }, { status: 500 });
   }
 }

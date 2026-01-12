@@ -4,10 +4,69 @@ import React, { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { 
   FaPlaneArrival, FaHome, FaCar, FaUserTie, FaMoneyBillWave, 
-  FaHandshake, FaPlus, FaArrowLeft, FaHistory, FaCheckCircle
+  FaHandshake, FaPlus, FaArrowLeft, FaHistory, FaCheckCircle, FaTimes
 } from 'react-icons/fa';
 import { toast } from 'react-hot-toast';
 import Sidebar from '@/components/Sidebar';
+
+const serviceConfig: any = {
+  'airport-pickup': {
+    title: 'Airport Pickup History',
+    icon: FaPlaneArrival,
+    color: 'text-blue-500',
+    api: '/api/airport-pickup/my-requests',
+    newLink: '/airport-pickup',
+    cols: ['Flight', 'Arrival', 'Status', 'Payment']
+  },
+  'accommodation': {
+    title: 'Accommodation History',
+    icon: FaHome,
+    color: 'text-emerald-500',
+    api: '/api/accommodation/my-requests',
+    newLink: '/accommodation',
+    cols: ['Property', 'Date', 'Status', 'Payment']
+  },
+  'car-rental': {
+    title: 'Car Rental History',
+    icon: FaCar,
+    color: 'text-indigo-500',
+    api: '/api/car/my-requests',
+    newLink: '/car',
+    cols: ['Vehicle', 'Date', 'Status', 'Payment']
+  },
+  'consultancy': {
+    title: 'Consultation History',
+    icon: FaUserTie,
+    color: 'text-purple-500',
+    api: '/api/consultant-booking/my-bookings',
+    newLink: '/consultant',
+    cols: ['Expert', 'Slot', 'Status', 'Meeting']
+  },
+  'loan-services': {
+    title: 'Loan Request History',
+    icon: FaMoneyBillWave,
+    color: 'text-amber-500',
+    api: '/api/loan/my-requests',
+    newLink: '/loan',
+    cols: ['Amount/Purpose', 'Date', 'Status', 'Payment']
+  },
+  'meetings': {
+    title: 'Scheduled Meetings',
+    icon: FaHandshake,
+    color: 'text-blue-600',
+    api: '/api/meetings/my',
+    newLink: '/meetings',
+    cols: ['Title', 'Time', 'Status', 'Link']
+  },
+  'community-events': {
+    title: 'Community Events',
+    icon: FaHistory,
+    color: 'text-pink-500',
+    api: '/api/events/my-registrations',
+    newLink: '/events',
+    cols: ['Event', 'Date', 'Status', 'Tickets']
+  }
+};
 
 export default function ServiceHistoryPage() {
   const params = useParams();
@@ -16,57 +75,8 @@ export default function ServiceHistoryPage() {
 
   const [data, setData] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-
-  const serviceConfig: any = {
-    'airport-pickup': {
-      title: 'Airport Pickup History',
-      icon: FaPlaneArrival,
-      color: 'text-blue-500',
-      api: '/api/airport-pickup/my-requests',
-      newLink: '/airport-pickup',
-      cols: ['Flight', 'Arrival', 'Status', 'Payment']
-    },
-    'accommodation': {
-      title: 'Accommodation History',
-      icon: FaHome,
-      color: 'text-emerald-500',
-      api: '/api/accommodation/my-requests',
-      newLink: '/accommodation',
-      cols: ['Property', 'Date', 'Status', 'Payment']
-    },
-    'car-rental': {
-      title: 'Car Rental History',
-      icon: FaCar,
-      color: 'text-indigo-500',
-      api: '/api/car/my-requests',
-      newLink: '/car',
-      cols: ['Vehicle', 'Date', 'Status', 'Payment']
-    },
-    'consultancy': {
-      title: 'Consultation History',
-      icon: FaUserTie,
-      color: 'text-purple-500',
-      api: '/api/consultant-booking/my-bookings',
-      newLink: '/consultant',
-      cols: ['Expert', 'Slot', 'Status', 'Meeting']
-    },
-    'loan-services': {
-      title: 'Loan Request History',
-      icon: FaMoneyBillWave,
-      color: 'text-amber-500',
-      api: '/api/loan/my-requests',
-      newLink: '/loan',
-      cols: ['Amount/Purpose', 'Date', 'Status', 'Payment']
-    },
-    'meetings': {
-      title: 'Scheduled Meetings',
-      icon: FaHandshake,
-      color: 'text-blue-600',
-      api: '/api/meetings/my',
-      newLink: '/meetings',
-      cols: ['Title', 'Time', 'Status', 'Link']
-    }
-  };
+  const [selectedItem, setSelectedItem] = useState<any>(null);
+  const [showDetailModal, setShowDetailModal] = useState(false);
 
   const config = serviceConfig[type];
 
@@ -94,16 +104,22 @@ export default function ServiceHistoryPage() {
     'car-rental': 'Car Rental',
     'consultancy': 'Consultancy',
     'loan-services': 'Loan Services',
-    'meetings': 'Meetings'
+    'meetings': 'Meetings',
+    'community-events': 'Community Events'
+  };
+
+  const handleShowDetail = (item: any) => {
+    setSelectedItem(item);
+    setShowDetailModal(true);
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-slate-900 overflow-hidden font-geist">
+    <div className="flex flex-col lg:flex-row min-h-screen bg-slate-50 dark:bg-slate-900 overflow-hidden font-geist">
       <Sidebar activeService={sidebarNameMap[type]} />
-      <main className="lg:ml-72 min-h-screen pb-24 md:pb-8 flex flex-col pt-4 px-4 md:px-8">
+      <main className="flex-1 min-h-screen pb-24 md:pb-8 flex flex-col pt-2 px-4 md:p-8">
         <div className="max-w-7xl mx-auto w-full flex-grow flex flex-col">
           {/* iOS-Style Header */}
-          <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-8 md:mb-12 pt-4">
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-6 md:mb-8 pt-0 md:pt-4">
             <div className="flex items-center gap-4">
               <div className={`w-14 h-14 md:w-16 md:h-16 rounded-2xl flex items-center justify-center ${config.color.replace('text-', 'bg-').replace('/10', '/20')} backdrop-blur-md shadow-sm`}>
                 <config.icon className={`w-7 h-7 md:w-8 md:h-8 ${config.color}`} />
@@ -165,6 +181,7 @@ export default function ServiceHistoryPage() {
                             {type === 'consultancy' && 'Consultation'}
                             {type === 'loan-services' && `$${item.amount}`}
                             {type === 'meetings' && item.title}
+                            {type === 'community-events' && item.eventTitle}
                           </p>
                           <p className="text-[10px] font-black text-slate-400 uppercase tracking-tighter">
                             {type === 'airport-pickup' && `To ${item.arrivalAirport}`}
@@ -173,6 +190,7 @@ export default function ServiceHistoryPage() {
                             {type === 'consultancy' && 'Expert Session'}
                             {type === 'loan-services' && item.purpose}
                             {type === 'meetings' && 'Virtual'}
+                            {type === 'community-events' && item.eventLocation}
                           </p>
                         </div>
                       </div>
@@ -207,11 +225,11 @@ export default function ServiceHistoryPage() {
                   <table className="w-full text-left table-fixed">
                     <thead>
                       <tr className="border-b border-slate-50 dark:border-slate-700 font-black text-slate-400 uppercase tracking-tighter text-sm">
-                        <th className="px-6 py-8 w-2/5">Info</th>
-                        <th className="px-6 py-8">Date</th>
-                        <th className="px-6 py-8">Status</th>
-                        <th className="px-6 py-8">Action</th>
-                        <th className="px-6 py-8 text-right pr-12">Detail</th>
+                        <th className="px-4 py-3 w-2/5">Info</th>
+                        <th className="px-4 py-3">Date</th>
+                        <th className="px-4 py-3">Status</th>
+                        <th className="px-4 py-3">Action</th>
+                        <th className="px-4 py-3 text-right pr-12">Detail</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-slate-50 dark:divide-slate-700 font-bold">
@@ -219,17 +237,17 @@ export default function ServiceHistoryPage() {
                         <tr key={item._id} className="hover:bg-slate-50/50 dark:hover:bg-slate-700/50 transition-colors">
                           {type === 'airport-pickup' && (
                             <>
-                              <td className="px-6 py-8 overflow-hidden">
+                              <td className="px-4 py-3 overflow-hidden">
                                   <p className="font-bold text-slate-900 dark:text-white text-base truncate mb-1">{item.flightNumber}</p>
                                   <p className="text-[10px] font-black text-slate-400 uppercase truncate tracking-tighter">To {item.arrivalAirport}</p>
                               </td>
-                              <td className="px-6 py-8 text-base text-slate-600 dark:text-slate-400 font-bold truncate">{new Date(item.arrivalDate).toLocaleDateString()}</td>
-                              <td className="px-6 py-8">
+                              <td className="px-4 py-3 text-base text-slate-600 dark:text-slate-400 font-bold truncate">{new Date(item.arrivalDate).toLocaleDateString()}</td>
+                              <td className="px-4 py-3">
                                 <span className={`px-4 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-wider ${
                                   item.status === 'APPROVED' ? 'bg-emerald-100 text-emerald-600' : 'bg-amber-100 text-amber-600'
                                 }`}>{item.status}</span>
                               </td>
-                              <td className="px-6 py-8">
+                              <td className="px-4 py-3">
                                 <span className={`text-[10px] font-black uppercase tracking-tighter ${item.paymentStatus === 'PAID' ? 'text-emerald-500' : 'text-rose-500'}`}>
                                   {item.paymentStatus || 'UNPAID'}
                                 </span>
@@ -239,17 +257,17 @@ export default function ServiceHistoryPage() {
 
                           {type === 'accommodation' && (
                             <>
-                              <td className="px-6 py-8 overflow-hidden">
+                              <td className="px-4 py-3 overflow-hidden">
                                   <p className="font-bold text-slate-900 dark:text-white text-base truncate mb-1">{item.accommodationType}</p>
                                   <p className="text-[10px] font-black text-slate-400 uppercase truncate tracking-tighter">{item.city}</p>
                               </td>
-                              <td className="px-6 py-8 text-base text-slate-600 dark:text-slate-400 font-bold truncate">{new Date(item.checkIn).toLocaleDateString()}</td>
-                              <td className="px-6 py-8">
+                              <td className="px-4 py-3 text-base text-slate-600 dark:text-slate-400 font-bold truncate">{new Date(item.checkIn).toLocaleDateString()}</td>
+                              <td className="px-4 py-3">
                                 <span className={`px-4 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-wider ${
                                   item.status === 'APPROVED' ? 'bg-emerald-100 text-emerald-600' : 'bg-amber-100 text-amber-600'
                                 }`}>{item.status}</span>
                               </td>
-                              <td className="px-6 py-8">
+                              <td className="px-4 py-3">
                                 <span className={`text-[10px] font-black uppercase tracking-tighter ${item.paymentStatus === 'PAID' ? 'text-emerald-500' : 'text-rose-500'}`}>
                                   {item.paymentStatus || 'UNPAID'}
                                 </span>
@@ -259,17 +277,24 @@ export default function ServiceHistoryPage() {
 
                           {type === 'car-rental' && (
                             <>
-                              <td className="px-6 py-8 overflow-hidden">
-                                  <p className="font-bold text-slate-900 dark:text-white text-base truncate mb-1">{item.carTitle || 'Vehicle'}</p>
-                                  <p className="text-[10px] font-black text-slate-400 uppercase truncate tracking-tighter">{item.type || 'RENT'}</p>
+                              <td className="px-4 py-3 overflow-hidden">
+                                <div className="flex items-center gap-3">
+                                  {item.image && (
+                                    <img src={item.image} className="w-12 h-8 object-cover rounded-md" alt="" />
+                                  )}
+                                  <div className="min-w-0">
+                                    <p className="font-bold text-slate-900 dark:text-white text-base truncate mb-0.5">{item.title || item.carTitle || 'Vehicle'}</p>
+                                    <p className="text-[10px] font-black text-slate-400 uppercase truncate tracking-tighter">{item.type || 'RENT'}</p>
+                                  </div>
+                                </div>
                               </td>
-                              <td className="px-6 py-8 text-base text-slate-600 dark:text-slate-400 font-bold truncate">{new Date(item.createdAt).toLocaleDateString()}</td>
-                              <td className="px-6 py-8">
+                              <td className="px-4 py-3 text-base text-slate-600 dark:text-slate-400 font-bold truncate">{new Date(item.createdAt).toLocaleDateString()}</td>
+                              <td className="px-4 py-3">
                                 <span className={`px-4 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-wider ${
                                   item.status === 'APPROVED' ? 'bg-emerald-100 text-emerald-600' : 'bg-amber-100 text-amber-600'
-                                }`}>{item.status}</span>
+                                }`}>{item.status || 'PENDING'}</span>
                               </td>
-                              <td className="px-6 py-8">
+                              <td className="px-4 py-3">
                                 <span className={`text-[10px] font-black uppercase tracking-tighter ${item.paymentStatus === 'PAID' ? 'text-emerald-500' : 'text-rose-500'}`}>
                                   {item.paymentStatus || 'UNPAID'}
                                 </span>
@@ -279,35 +304,27 @@ export default function ServiceHistoryPage() {
 
                           {type === 'consultancy' && (
                             <>
-                              <td className="px-6 py-8 overflow-hidden">
+                              <td className="px-4 py-3 overflow-hidden">
                                   <p className="font-bold text-slate-900 dark:text-white text-base truncate mb-1">Consultation</p>
                                   <p className="text-[10px] font-black text-slate-400 uppercase truncate tracking-tighter">Expert session</p>
                               </td>
-                              <td className="px-6 py-8 text-base text-slate-600 dark:text-slate-400 font-bold truncate">{item.slot}</td>
-                              <td className="px-6 py-8">
-                                <span className="px-1.5 sm:px-4 py-1 sm:py-1.5 rounded-md sm:rounded-xl text-[8px] sm:text-[9px] md:text-[10px] font-black uppercase tracking-tighter bg-emerald-100 text-emerald-600">BOOKED</span>
-                              </td>
-                              <td className="px-6 py-8">
-                                {item.meetLink ? (
-                                  <button onClick={() => window.location.href = item.meetLink} className="text-blue-600 font-black text-[9px] sm:text-[10px] md:text-[11px] uppercase hover:underline">Link</button>
-                                ) : <span className="text-slate-400 text-[9px] sm:text-[10px] md:text-[11px] font-black uppercase">---</span>}
-                              </td>
+                              <td className="px-4 py-3 text-base text-slate-600 dark:text-slate-400 font-bold truncate">{item.slot}</td>
                             </>
                           )}
 
                           {type === 'loan-services' && (
                             <>
-                              <td className="px-6 py-8 overflow-hidden">
+                              <td className="px-4 py-3 overflow-hidden">
                                   <p className="font-bold text-slate-900 dark:text-white text-base truncate mb-1">${item.amount}</p>
                                   <p className="text-[10px] font-black text-slate-400 uppercase truncate tracking-tighter">{item.purpose}</p>
                               </td>
-                              <td className="px-6 py-8 text-base text-slate-600 dark:text-slate-400 font-bold truncate">{new Date(item.createdAt).toLocaleDateString()}</td>
-                              <td className="px-6 py-8">
+                              <td className="px-4 py-3 text-base text-slate-600 dark:text-slate-400 font-bold truncate">{new Date(item.createdAt).toLocaleDateString()}</td>
+                              <td className="px-4 py-3">
                                 <span className={`px-4 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-wider ${
                                   item.status === 'APPROVED' ? 'bg-emerald-100 text-emerald-600' : 'bg-amber-100 text-amber-600'
-                                }`}>{item.status}</span>
+                                }`}>{item.status || 'PENDING'}</span>
                               </td>
-                              <td className="px-6 py-8">
+                              <td className="px-4 py-3">
                                 <span className={`text-[10px] font-black uppercase tracking-tighter ${item.paymentStatus === 'PAID' ? 'text-emerald-500' : 'text-rose-500'}`}>
                                   {item.paymentStatus || 'UNPAID'}
                                 </span>
@@ -317,22 +334,58 @@ export default function ServiceHistoryPage() {
 
                           {type === 'meetings' && (
                             <>
-                              <td className="px-6 py-8 overflow-hidden">
-                                  <p className="font-bold text-slate-900 dark:text-white text-base truncate mb-1">{item.title || 'Meeting'}</p>
-                                  <p className="text-[10px] font-black text-slate-400 uppercase truncate tracking-tighter">Virtual</p>
+                              <td className="px-4 py-3 overflow-hidden">
+                                  <p className="font-bold text-slate-900 dark:text-white text-base truncate mb-1">{item.title}</p>
+                                  <p className="text-[10px] font-black text-slate-400 uppercase truncate tracking-tighter">Virtual Meeting</p>
                               </td>
-                              <td className="px-6 py-8 text-base text-slate-600 dark:text-slate-400 font-bold truncate">{new Date(item.startTime).toLocaleString()}</td>
-                              <td className="px-6 py-8">
-                                <span className="px-1.5 sm:px-4 py-1 sm:py-1.5 rounded-md sm:rounded-xl text-[8px] sm:text-[9px] md:text-[10px] font-black uppercase tracking-tighter bg-blue-100 text-blue-600">SCHEDULE</span>
+                              <td className="px-4 py-3 text-base text-slate-600 dark:text-slate-400 font-bold truncate">{new Date(item.startTime).toLocaleString()}</td>
+                              <td className="px-4 py-3">
+                                <span className={`px-4 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-wider ${
+                                  item.status === 'APPROVED' ? 'bg-emerald-100 text-emerald-600' : 'bg-amber-100 text-amber-600'
+                                }`}>{item.status || 'PENDING'}</span>
                               </td>
-                              <td className="px-6 py-8">
-                                <button onClick={() => window.location.href = item.meetLink} className="text-blue-600 font-black text-[9px] sm:text-[10px] md:text-[11px] uppercase hover:underline">Link</button>
+                              <td className="px-4 py-3">
+                                <span className={`text-[10px] font-black uppercase tracking-tighter ${item.paymentStatus === 'PAID' ? 'text-emerald-500' : 'text-rose-500'}`}>
+                                  {item.paymentStatus || 'UNPAID'}
+                                </span>
                               </td>
                             </>
                           )}
 
-                          <td className="px-6 py-8 text-right pr-12">
-                            <button className="text-blue-600 hover:text-blue-700 transition-colors text-[10px] font-black uppercase whitespace-nowrap tracking-widest">
+                          {type === 'community-events' && (
+                            <>
+                              <td className="px-4 py-3 overflow-hidden">
+                                <div className="flex items-center gap-3">
+                                  {item.eventImage && (
+                                    <img src={item.eventImage} className="w-12 h-8 object-cover rounded-md" alt="" />
+                                  )}
+                                  <div className="min-w-0">
+                                    <p className="font-bold text-slate-900 dark:text-white text-base truncate mb-0.5">{item.eventTitle}</p>
+                                    <p className="text-[10px] font-black text-slate-400 uppercase truncate tracking-tighter">{item.eventLocation}</p>
+                                  </div>
+                                </div>
+                              </td>
+                              <td className="px-4 py-3 text-base text-slate-600 dark:text-slate-400 font-bold truncate">
+                                {new Date(item.eventDate).toLocaleDateString()}
+                              </td>
+                              <td className="px-4 py-3">
+                                <span className={`px-4 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-wider ${
+                                  item.status === 'APPROVED' ? 'bg-emerald-100 text-emerald-600' : 'bg-amber-100 text-amber-600'
+                                }`}>{item.status || 'PENDING'}</span>
+                              </td>
+                              <td className="px-4 py-3">
+                                <span className="text-xs font-bold text-slate-600 dark:text-slate-400">
+                                  {item.tickets || 1} Tickets
+                                </span>
+                              </td>
+                            </>
+                          )}
+
+                          <td className="px-4 py-3 text-right pr-12">
+                            <button 
+                              onClick={() => handleShowDetail(item)}
+                              className="text-blue-600 hover:text-blue-700 transition-colors text-[10px] font-black uppercase whitespace-nowrap tracking-widest"
+                            >
                               Detail →
                             </button>
                           </td>
@@ -346,6 +399,124 @@ export default function ServiceHistoryPage() {
           )}
         </div>
       </main>
+
+      {/* Detail Modal */}
+      {showDetailModal && selectedItem && (
+        <div className="fixed inset-0 bg-slate-900/80 backdrop-blur-xl z-[100] flex items-center justify-center p-4">
+          <div className="bg-white dark:bg-slate-900 w-full max-w-xl rounded-[3rem] shadow-2xl overflow-hidden animate-in zoom-in-95 duration-200">
+            <div className="p-8 sm:p-12">
+              <div className="flex justify-between items-start mb-8">
+                <div>
+                  <h2 className="text-2xl font-black text-slate-900 dark:text-white tracking-tight">Request Details</h2>
+                  <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mt-1">Ref: {selectedItem._id}</p>
+                </div>
+                <button onClick={() => setShowDetailModal(false)} className="p-3 bg-slate-100 dark:bg-slate-800 rounded-2xl text-slate-400 hover:text-rose-500 transition-all">
+                  <FaTimes />
+                </button>
+              </div>
+
+              <div className="space-y-6">
+                <div className="flex items-center gap-4 p-6 bg-slate-50 dark:bg-slate-800/50 rounded-3xl border border-slate-100 dark:border-slate-800">
+                  <div className="w-16 h-16 bg-blue-600/10 rounded-2xl flex items-center justify-center text-2xl text-blue-600">
+                    {config.icon && <config.icon />}
+                  </div>
+                  <div>
+                    <h3 className="font-black text-slate-900 dark:text-white text-lg">
+                      {selectedItem.title || selectedItem.carTitle || selectedItem.accommodationType || config.title}
+                    </h3>
+                    <p className="text-xs font-bold text-slate-500 uppercase tracking-wider">{selectedItem.status || 'PENDING'}</p>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-6">
+                  <div className="bg-slate-50 dark:bg-slate-800/50 p-5 rounded-2xl">
+                    <p className="text-[10px] font-black text-slate-400 uppercase mb-1">Date</p>
+                    <p className="font-bold text-slate-900 dark:text-white">
+                      {new Date(selectedItem.createdAt || selectedItem.arrivalDate || selectedItem.startTime).toLocaleDateString()}
+                    </p>
+                  </div>
+                  <div className="bg-slate-50 dark:bg-slate-800/50 p-5 rounded-2xl">
+                    <p className="text-[10px] font-black text-slate-400 uppercase mb-1">Payment</p>
+                    <p className={`font-black uppercase ${selectedItem.paymentStatus === 'PAID' ? 'text-emerald-500' : 'text-rose-500'}`}>
+                      {selectedItem.paymentStatus || 'UNPAID'}
+                    </p>
+                  </div>
+                </div>
+
+                {/* Service Specific Details */}
+                <div className="space-y-4 pt-4 border-t border-slate-100 dark:border-slate-800">
+                  {type === 'car-rental' && (
+                    <div className="grid grid-cols-1 gap-4">
+                       <div className="flex justify-between items-center text-sm">
+                          <span className="text-slate-500 font-bold">Price</span>
+                          <span className="text-slate-900 dark:text-white font-black">${selectedItem.price}</span>
+                       </div>
+                       {selectedItem.specs && (
+                         <div className="flex justify-between items-center text-sm">
+                            <span className="text-slate-500 font-bold">Specs</span>
+                            <span className="text-slate-900 dark:text-white font-black">{selectedItem.specs}</span>
+                         </div>
+                       )}
+                       {selectedItem.location && (
+                         <div className="flex justify-between items-center text-sm">
+                            <span className="text-slate-500 font-bold">Pickup Zone</span>
+                            <span className="text-slate-900 dark:text-white font-black">{selectedItem.location}</span>
+                         </div>
+                       )}
+                    </div>
+                  )}
+
+                  {type === 'airport-pickup' && (
+                    <div className="grid grid-cols-1 gap-4">
+                       <div className="flex justify-between items-center text-sm">
+                          <span className="text-slate-500 font-bold">Flight Number</span>
+                          <span className="text-slate-900 dark:text-white font-black">{selectedItem.flightNumber}</span>
+                       </div>
+                       <div className="flex justify-between items-center text-sm">
+                          <span className="text-slate-500 font-bold">Airport</span>
+                          <span className="text-slate-900 dark:text-white font-black">{selectedItem.arrivalAirport}</span>
+                       </div>
+                    </div>
+                  )}
+
+                  {type === 'community-events' && (
+                    <div className="grid grid-cols-1 gap-4">
+                       <div className="flex justify-between items-center text-sm">
+                          <span className="text-slate-500 font-bold">Event</span>
+                          <span className="text-slate-900 dark:text-white font-black">{selectedItem.eventTitle}</span>
+                       </div>
+                       <div className="flex justify-between items-center text-sm">
+                          <span className="text-slate-500 font-bold">Tickets</span>
+                          <span className="text-slate-900 dark:text-white font-black">{selectedItem.tickets || 1}</span>
+                       </div>
+                       <div className="flex justify-between items-center text-sm">
+                          <span className="text-slate-500 font-bold">Location</span>
+                          <span className="text-slate-900 dark:text-white font-black">{selectedItem.eventLocation}</span>
+                       </div>
+                    </div>
+                  )}
+                  
+                  {(selectedItem.adminNotes || selectedItem.vendorNotes) && (
+                    <div className="p-4 bg-blue-50 dark:bg-blue-900/20 border border-blue-100 dark:border-blue-800 rounded-2xl">
+                       <p className="text-[9px] font-black text-blue-600 dark:text-blue-400 uppercase tracking-widest mb-1">
+                         {selectedItem.vendorId ? 'Partner Message' : 'Admin Message'}
+                       </p>
+                       <p className="text-xs font-bold text-slate-600 dark:text-slate-300 italic">"{selectedItem.adminNotes || selectedItem.vendorNotes}"</p>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              <button 
+                onClick={() => setShowDetailModal(false)}
+                className="w-full mt-10 py-4 bg-slate-900 dark:bg-white text-white dark:text-slate-900 rounded-2xl font-black text-xs uppercase tracking-[0.2em]"
+              >
+                Close View
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
