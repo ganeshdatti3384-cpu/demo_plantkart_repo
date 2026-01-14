@@ -1,0 +1,76 @@
+{
+  "placeholderImages": [
+    {
+      "id": "hero-login",
+      "description": "A beautiful view of the Sydney Opera House and Harbour Bridge.",
+      "imageUrl": "https://images.unsplash.com/photo-1689834677356-441a39b353ab?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwxMHx8U3lkbmV5JTIwQXVzdHJhbGlhfGVufDB8fHx8MTc2ODI5MzI4NXww&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "Sydney Australia"
+    },
+    {
+      "id": "accommodation-1",
+      "description": "A modern apartment with city views.",
+      "imageUrl": "https://images.unsplash.com/photo-1583847268964-b28dc8f51f92?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw1fHxtb2Rlcm4lMjBhcGFydG1lbnR8ZW58MHx8fHwxNzY4MjI1MzQ2fDA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "modern apartment"
+    },
+    {
+      "id": "accommodation-2",
+      "description": "A cozy suburban house with a garden.",
+      "imageUrl": "https://images.unsplash.com/photo-1721149122657-7b5440f39160?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwyfHxzdWJ1cmJhbiUyMGhvdXNlfGVufDB8fHx8MTc2ODI0Njg0MXww&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "suburban house"
+    },
+    {
+      "id": "accommodation-3",
+      "description": "A stylish studio in the heart of the city.",
+      "imageUrl": "https://images.unsplash.com/photo-1767721001003-57a78258707d?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwxfHxzdHlsaXNoJTIwc3R1ZGlvfGVufDB8fHx8MTc2ODI2MDY1N3ww&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "stylish studio"
+    },
+    {
+      "id": "accommodation-4",
+      "description": "A spacious family home near the beach.",
+      "imageUrl": "https://images.unsplash.com/photo-1601758003122-53c40e686a19?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw3fHxmYW1pbHklMjBob21lfGVufDB8fHx8MTc2ODIxMTc3NHww&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "family home"
+    },
+    {
+      "id": "vehicle-1",
+      "description": "A reliable Toyota Camry sedan.",
+      "imageUrl": "https://images.unsplash.com/photo-1722088353797-ddfe6e2faf34?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwzfHxzZWRhbiUyMGNhcnxlbnwwfHx8fDE3NjgyMDg3MzN8MA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "sedan car"
+    },
+    {
+      "id": "vehicle-2",
+      "description": "A spacious Hyundai Santa Fe SUV.",
+      "imageUrl": "https://images.unsplash.com/photo-1615063029891-497bebd4f03c?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwxfHxzdXYlMjBjYXJ8ZW58MHx8fHwxNzY4MjE4MDQwfDA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "suv car"
+    },
+    {
+      "id": "vehicle-3",
+      "description": "A compact and efficient Honda Civic.",
+      "imageUrl": "https://images.unsplash.com/photo-1750972821645-99913cd59abf?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw0fHxjb21wYWN0JTIwY2FyfGVufDB8fHx8MTc2ODI5NDMyNnww&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "compact car"
+    },
+    {
+      "id": "vehicle-4",
+      "description": "A practical Kia Carnival minivan.",
+      "imageUrl": "https://images.unsplash.com/photo-1521499420147-36d5bfc2781f?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw5fHxtaW5pdmFufGVufDB8fHx8MTc2ODMxNzY5OHww&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "minivan"
+    },
+    {
+      "id": "avatar-1",
+      "description": "Portrait of a consultant.",
+      "imageUrl": "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw2fHxwZXJzb24lMjBwb3J0cmFpdHxlbnwwfHx8fDE3NjgyMzk0NDl8MA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "person portrait"
+    },
+    {
+      "id": "avatar-2",
+      "description": "Portrait of another consultant.",
+      "imageUrl": "https://images.unsplash.com/photo-1600180758890-6b94519a8ba6?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw1fHxwZXJzb24lMjBwb3J0cmFpdHxlbnwwfHx8fDE3NjgyMzk0NDl8MA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "person portrait"
+    },
+    {
+      "id": "avatar-3",
+      "description": "Portrait of a third consultant.",
+      "imageUrl": "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwzfHxwZXJzb24lMjBwb3J0cmFpdHxlbnwwfHx8fDE3NjgyMzk0NDl8MA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "person portrait"
+    }
+  ]
+}

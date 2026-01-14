@@ -1,42 +1,48 @@
 import { NextRequest, NextResponse } from 'next/server';
-import clientPromise from '../../../lib/mongodb';
+import connectToDatabase from '@/lib/mongodb';
+import Event from '@/models/Event';
 
-export async function GET() {
+export async function GET(request: NextRequest) {
   try {
-    const client = await clientPromise;
-    const db = client.db();
-    // Only show approved events to users
-    const events = await db.collection('events')
-      .find({ status: 'APPROVED' })
-      .sort({ createdAt: -1 })
-      .toArray();
+    await connectToDatabase();
+
+    const { searchParams } = new URL(request.url);
+    const category = searchParams.get('category');
+    const status = searchParams.get('status') || 'Active';
+
+    let query: any = { status };
+
+    if (category && category !== 'all') {
+      query.category = category;
+    }
+
+    const events = await Event.find(query).sort({ date: 1 });
+
     return NextResponse.json(events);
   } catch (error) {
-    console.error('Error fetching events:', error);
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+    console.error('Get events error:', error);
+    return NextResponse.json({ message: 'Failed to fetch events' }, { status: 500 });
   }
 }
 
-export async function POST(req: NextRequest) {
-  const role = req.headers.get('x-user-role');
-  if (role !== 'admin' && role !== 'super_admin') {
-    return NextResponse.json({ success: false, message: 'Unauthorized' }, { status: 403 });
-  }
-
+export async function POST(request: NextRequest) {
   try {
-    const data = await req.json();
-    const client = await clientPromise;
-    const db = client.db();
-    
-    const result = await db.collection('events').insertOne({
-      ...data,
-      registrations: [],
-      status: 'APPROVED', // Admin-created events are auto-approved
-      createdAt: new Date()
+    const eventData = await request.json();
+    await connectToDatabase();
+
+    // Generate unique ID
+    const id = `event_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+
+    const event = new Event({
+      ...eventData,
+      id,
     });
 
-    return NextResponse.json({ success: true, id: result.insertedId });
+    await event.save();
+
+    return NextResponse.json(event, { status: 201 });
   } catch (error) {
-    return NextResponse.json({ success: false, message: error.message }, { status: 500 });
+    console.error('Create event error:', error);
+    return NextResponse.json({ message: 'Failed to create event' }, { status: 500 });
   }
 }
