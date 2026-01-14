@@ -1,0 +1,106 @@
+# AussieAssist Application Workflow
+
+This document outlines the complete workflow for each module within the AussieAssist application. The application is designed as a prototype with client-side data persistence using `localStorage`.
+
+## 1. Core Concepts
+
+### 1.1. User Roles & Authentication
+
+The application simulates a multi-role system. On the login page, a user can select one of the following roles:
+
+-   **User (Student/Migrant)**: The primary consumer of the services.
+-   **Vendor (Car Rental)**: A business that lists vehicles for rent or sale.
+-   **Consultant (Visa/PR)**: An expert providing paid consultations.
+-   **Admin**: A super-user who manages the platform's content and users.
+
+Upon login, the selected role is stored in `localStorage`, and the UI (specifically the sidebar navigation) adapts to show only the relevant features for that role.
+
+### 1.2. User Profile & Feature Gating
+
+A critical part of the user workflow is the **Profile Page**.
+
+-   **Data Collection**: Users fill out their personal information, including their name, contact details, citizenship, and student status. The form fields dynamically change based on their selections (e.g., asking for visa details if the user is international).
+-   **Visa-Based Feature Access**: A key field is **"Do you have a valid Australian visa?"**.
+    -   If a user selects **"No"**, their access is restricted. The sidebar will only show links to the **Consultancy** and **My Profile** pages. This funnels them towards getting the help they need to secure a visa.
+    -   If a user selects **"Yes"**, all standard user features become available.
+
+## 2. User (Student/Migrant) Workflow
+
+### 2.1. Accommodation Marketplace
+
+-   **View Listings**: Users can browse a list of available accommodations.
+-   **List a Property**: Users can add their own property to the marketplace by filling out a form in a dialog.
+-   **Data Persistence**: All accommodation data is managed in `localStorage`.
+
+### 2.2. Vehicles (Rentals & Sales)
+
+-   **Browse Vehicles**: Users see a list of vehicles available for rent or sale. The listings only show vehicles marked as "Active" by the vendor. Each listing displays the vendor's business name (Garage Name) from the vendor's profile.
+-   **Book a Rental**:
+    1.  The user clicks "Rent Now" on a vehicle.
+    2.  A dialog appears, prompting for a start date and rental duration. The user's name is pre-filled from their profile.
+    3.  Submitting the form creates a booking request with a "Pending" status and stores it in `localStorage`.
+-   **Inquire about a Sale**: Users can send an inquiry or an offer for a vehicle listed for sale.
+
+### 2.3. Airport Pickup
+
+-   **Request Pickup**: Users can fill out a form with their flight number, arrival time, and drop-off address to request a pickup.
+-   **Profile Integration**: The user's full name is automatically pre-filled from their profile information, and the entire profile is saved with the request for the admin's reference.
+
+### 2.4. Consultancy Booking
+
+-   **View Consultants**: Users can see a list of available consultants and their specialties.
+-   **Book a Session**:
+    1.  The user views a consultant's availability on a calendar.
+    2.  They select an available date and time slot.
+    3.  Confirming the booking creates a new appointment, using the user's name from their profile.
+    4.  The booking includes a simulated Google Meet link.
+-   **View Bookings**: Users can see a list of their own upcoming and past bookings.
+
+### 2.5. AI Resume Builder
+
+-   **Two Options**: Users can choose to either optimize an existing resume or create a new one from scratch.
+-   **Input**: They provide their existing resume (if optimizing) and a target job description.
+-   **AI Generation**: The backend Genkit flow processes the input and returns a professionally formatted resume tailored to the Australian market.
+
+## 3. Vendor (Car Rental) Workflow
+
+### 3.1. Vendor Dashboard
+
+-   **Add Vehicles**: Vendors can add new vehicles for rent or sale through a detailed form, including make, model, year, and pricing.
+-   **Manage Listings**: Vendors see a table of all their listed vehicles.
+-   **Status Control**: Using a dropdown menu for each vehicle, vendors can change the status to:
+    -   `Active`: Visible to users in the marketplace.
+    -   `Rented`: Temporarily unavailable.
+    -   `Sold`: Permanently removed from sale listings.
+    This directly controls visibility on the user-facing `/vehicles` page.
+
+### 3.2. Vendor Bookings
+
+-   **View Requests**: Vendors have a dedicated "My Bookings" page to see all incoming rental requests from users.
+-   **Approve Bookings**: For each pending request, the vendor can click "Approve."
+    -   This changes the booking status to "Confirmed."
+    -   It also automatically changes the corresponding vehicle's status to "Rented," removing it from the public marketplace.
+
+### 3.3. Vendor Profile
+
+-   **Manage Details**: Vendors can update their public business information, including their "Garage Name" and "Address."
+-   **Change Password**: A standard form to update their account password.
+
+## 4. Admin Workflow
+
+Admins have a suite of management pages to oversee the platform's content and users.
+
+-   **Dashboard**: A high-level overview of platform statistics.
+-   **User Management**: View and manage all standard users (students/migrants).
+-   **Vendor Management**: View and manage all car rental vendors. This page includes calculated stats like total vehicles, bookings, and revenue for each vendor.
+-   **Consultant Management**: View and manage all Visa/PR consultants.
+-   **Pickup Management**: View all pending airport pickup requests from users.
+-   **Job, Discount, & Event Management**: Create, view, and manage job postings, partner discounts, and community events that are displayed on the user-facing pages.
+
+## 5. Consultant Workflow
+
+-   **Consultant Dashboard**:
+    -   View and manage all their upcoming, current, and completed bookings.
+    -   They can mark meetings as "Complete."
+-   **Set Availability**: Consultants have an advanced interface to set their weekly availability. They can toggle days on/off and add specific time slots either individually or in bulk (e.g., generate 30-minute slots from 9 AM to 5 PM). This availability is what users see when they go to book a session.
+# overseas-platform
