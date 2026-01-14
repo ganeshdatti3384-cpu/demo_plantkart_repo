@@ -1,48 +1,32 @@
 import { NextRequest, NextResponse } from 'next/server';
-import connectToDatabase from '@/lib/mongodb';
-import Event from '@/models/Event';
+import clientPromise from '../../../lib/mongodb';
 
-export async function GET(request: NextRequest) {
-  try {
-    await connectToDatabase();
-
-    const { searchParams } = new URL(request.url);
-    const category = searchParams.get('category');
-    const status = searchParams.get('status') || 'Active';
-
-    let query: any = { status };
-
-    if (category && category !== 'all') {
-      query.category = category;
-    }
-
-    const events = await Event.find(query).sort({ date: 1 });
-
-    return NextResponse.json(events);
-  } catch (error) {
-    console.error('Get events error:', error);
-    return NextResponse.json({ message: 'Failed to fetch events' }, { status: 500 });
-  }
+export async function GET() {
+  const client = await clientPromise;
+  const db = client.db();
+  const events = await db.collection('events').find({}).toArray();
+  return NextResponse.json(events);
 }
 
-export async function POST(request: NextRequest) {
+export async function POST(req: NextRequest) {
+  const role = req.headers.get('x-user-role');
+  if (role !== 'admin' && role !== 'super_admin') {
+    return NextResponse.json({ success: false, message: 'Unauthorized' }, { status: 403 });
+  }
+
   try {
-    const eventData = await request.json();
-    await connectToDatabase();
-
-    // Generate unique ID
-    const id = `event_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-
-    const event = new Event({
-      ...eventData,
-      id,
+    const data = await req.json();
+    const client = await clientPromise;
+    const db = client.db();
+    
+    const result = await db.collection('events').insertOne({
+      ...data,
+      registrations: [],
+      createdAt: new Date()
     });
 
-    await event.save();
-
-    return NextResponse.json(event, { status: 201 });
+    return NextResponse.json({ success: true, id: result.insertedId });
   } catch (error) {
-    console.error('Create event error:', error);
-    return NextResponse.json({ message: 'Failed to create event' }, { status: 500 });
+    return NextResponse.json({ success: false, message: error.message }, { status: 500 });
   }
 }

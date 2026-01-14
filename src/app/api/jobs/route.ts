@@ -1,25 +1,32 @@
 import { NextRequest, NextResponse } from 'next/server';
-import connectToDatabase from '@/lib/mongodb';
-import Job from '@/models/Job';
+import clientPromise from '@/lib/mongodb';
 
 export async function GET() {
   try {
-    await connectToDatabase();
-    const jobs = await Job.find({});
+    const client = await clientPromise;
+    const db = client.db();
+    const jobs = await db.collection('jobs').find({}).sort({ createdAt: -1 }).toArray();
     return NextResponse.json(jobs);
-  } catch (error) {
-    return NextResponse.json({ error: 'Failed to fetch jobs' }, { status: 500 });
+  } catch (err: any) {
+    return NextResponse.json({ error: err.message || 'Internal Server Error' }, { status: 500 });
   }
 }
 
-export async function POST(request: NextRequest) {
+export async function POST(req: NextRequest) {
   try {
-    await connectToDatabase();
-    const body = await request.json();
-    const job = new Job(body);
-    await job.save();
-    return NextResponse.json(job, { status: 201 });
-  } catch (error) {
-    return NextResponse.json({ error: 'Failed to create job' }, { status: 500 });
+    const body = await req.json();
+    const required = ['title','company','location','externalUrl'];
+    for (const f of required) if (!body[f]) return NextResponse.json({ error: `${f} is required` }, { status: 400 });
+
+    // validate URL
+    try { new URL(body.externalUrl); } catch (e) { return NextResponse.json({ error: 'externalUrl must be a valid URL' }, { status: 400 }); }
+
+    const client = await clientPromise;
+    const db = client.db();
+    const doc = { ...body, createdAt: new Date(), createdBy: null };
+    const result = await db.collection('jobs').insertOne(doc);
+    return NextResponse.json({ success: true, id: result.insertedId });
+  } catch (err: any) {
+    return NextResponse.json({ error: err.message || 'Internal Server Error' }, { status: 500 });
   }
 }

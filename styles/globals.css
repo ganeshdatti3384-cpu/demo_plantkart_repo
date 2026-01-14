@@ -1,0 +1,47 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 222.2 84% 4.9%;
+  }
+
+  .dark {
+    --background: 222.2 84% 4.9%;
+    --foreground: 210 40% 98%;
+  }
+
+  /* Prevent horizontal scrolling and handle mobile safe areas */
+  html, body {
+    @apply overflow-x-hidden w-full m-0 p-0;
+    max-width: 100vw;
+  }
+
+  body {
+    @apply bg-white text-slate-950 dark:bg-slate-950 dark:text-slate-50 min-h-screen transition-colors duration-300;
+    /* iOS Momentum Scrolling Performance */
+    -webkit-overflow-scrolling: touch;
+    touch-action: pan-y;
+  }
+}
+
+@layer components {
+  .btn-primary {
+    @apply px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-2xl font-bold shadow-xl shadow-blue-500/20 transition-all active:scale-95 disabled:opacity-50 flex items-center justify-center;
+  }
+
+  .card {
+    @apply bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-[2rem] p-8 shadow-2xl shadow-slate-200/50 dark:shadow-none;
+  }
+
+  .input-field {
+    @apply w-full p-4 bg-slate-50 dark:bg-slate-800/50 border-2 border-slate-100 dark:border-slate-800 rounded-2xl focus:outline-none focus:border-blue-600 focus:bg-white dark:focus:bg-slate-900 transition-all font-medium text-slate-900 dark:text-white placeholder:text-slate-400;
+  }
+
+  .label {
+    @apply block text-xs font-black text-slate-500 dark:text-slate-400 uppercase tracking-[0.15em] mb-2 px-1;
+  }
+}
+
